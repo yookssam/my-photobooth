@@ -330,7 +330,6 @@
       startBtn.disabled = true;
       resultSection.style.display = 'none';
 
-      // 🎥 4컷 촬영 시작 시 동영상 녹화 시작
       startRecording();
 
       for (let i = 0; i < 4; i++) {
@@ -338,7 +337,6 @@
         await new Promise(r => setTimeout(r, 500));
       }
 
-      // 🎥 촬영 완료 시 녹화 중지
       stopRecording();
 
       renderFourCutFrame();
@@ -348,15 +346,11 @@
     }
 
     function renderFourCutFrame() {
-      const photoW = 600;
-      const photoH = 450;
-      const padding = 24;
-      const headerH = 70;
-      const footerH = 90;
+      // 1270 x 1110 캔버스 크기 지정
+      canvas.width = 1270;
+      canvas.height = 1110;
 
-      canvas.width = (photoW * 2) + (padding * 3);
-      canvas.height = headerH + (photoH * 2) + (padding * 3) + footerH;
-
+      // 1. bg-school.png 배경 그리기
       if (schoolBgImage.complete && schoolBgImage.naturalWidth !== 0) {
         ctx.drawImage(schoolBgImage, 0, 0, canvas.width, canvas.height);
       } else {
@@ -365,29 +359,45 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
+      // 2. 4컷 사진 정밀 좌표 및 모서리 둥글게 배치
+      const photoW = 570;
+      const photoH = 410;
+
       const positions = [
-        { x: padding, y: headerH + padding },
-        { x: padding * 2 + photoW, y: headerH + padding },
-        { x: padding, y: headerH + padding * 2 + photoH },
-        { x: padding * 2 + photoW, y: headerH + padding * 2 + photoH }
+        { x: 50,  y: 110 }, // 1번 (좌측 상단)
+        { x: 650, y: 110 }, // 2번 (우측 상단)
+        { x: 50,  y: 550 }, // 3번 (좌측 하단)
+        { x: 650, y: 550 }  // 4번 (우측 하단)
       ];
 
       capturedPhotos.forEach((imgCanvas, index) => {
         const pos = positions[index];
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(pos.x, pos.y, photoW, photoH, 12);
+        } else {
+          ctx.rect(pos.x, pos.y, photoW, photoH);
+        }
+        ctx.clip();
+        
         ctx.drawImage(imgCanvas, pos.x, pos.y, photoW, photoH);
+        ctx.restore();
       });
 
+      // 3. 추가 입력 문구 (선택)
       const customCaption = captionInput.value.trim();
       if (customCaption) {
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 28px sans-serif';
+        ctx.font = 'bold 26px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(customCaption, canvas.width / 2, canvas.height - 55);
+        ctx.fillText(customCaption, canvas.width / 2, canvas.height - 60);
       }
 
+      // 4. 날짜 표시 (선택)
       if (showDateCheckbox.checked) {
         const today = new Date().toISOString().split('T')[0];
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#cccccc';
         ctx.font = '18px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(today, canvas.width / 2, canvas.height - 25);
@@ -421,7 +431,6 @@
       link.click();
     }
 
-    // 모션영상 저장
     function downloadVideo() {
       if (!recordedVideoBlob) return;
       const ext = recordedVideoBlob.type.includes('mp4') ? 'mp4' : 'webm';
@@ -431,7 +440,6 @@
       a.click();
     }
 
-    // 모션영상 공유
     async function shareVideo() {
       if (!recordedVideoBlob) return;
       const ext = recordedVideoBlob.type.includes('mp4') ? 'mp4' : 'webm';
