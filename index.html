@@ -65,18 +65,19 @@
             width: 100%;
             max-width: 420px;
             height: calc(100vh - 120px);
-            max-height: 620px;
+            max-height: 640px;
             background-color: #000000;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
-            padding: 50px 16px 60px 16px; /* 상/하단 배경 장식을 피하기 위한 여백 설정 */
+            /* 하단 문구가 안 짤리도록 상/하 패딩 조절 */
+            padding: 45px 16px 75px 16px;
             transition: all 0.3s ease;
         }
 
-        /* 배경 이미지(상/하단 프레임 장식) - 카메라 뒤 레이어로 배치 */
+        /* 배경 이미지 오버레이 레이어 */
         .viewfinder-outer::after {
             content: '';
             position: absolute;
@@ -88,7 +89,7 @@
             background-position: center;
             background-repeat: no-repeat;
             pointer-events: none;
-            z-index: 2; /* 카메라 화면(z-index: 5) 아래로 이동 */
+            z-index: 2; /* 카메라 박스 아래 배치 */
         }
 
         .viewfinder-outer.theme-school::after {
@@ -103,26 +104,27 @@
         /* 사용자 입력 문구 위치 */
         .frame-header {
             position: absolute;
-            top: 14px;
+            top: 12px;
             right: 20px;
             font-size: 0.95rem;
             font-weight: 700;
-            z-index: 15; /* 가장 최상단 */
+            z-index: 15;
             white-space: nowrap;
             color: #ffffff;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
-        /* 카메라 화면 그리드 레이어 (배경보다 위에 배치) */
+        /* 카메라 화면 그리드 레이어 */
         .camera-grid {
             flex: 1;
             display: grid;
             gap: 8px;
             width: 100%;
             position: relative;
-            z-index: 5; /* 배경 ::after (z-index: 2)보다 위로 올라오도록 설정 */
+            z-index: 5;
             overflow: hidden;
             border-radius: 8px;
+            margin-bottom: 10px; /* 하단 문구와 카메라 박스 간격 확보 */
         }
 
         .camera-grid.cut-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
@@ -495,7 +497,6 @@
         let currentFont = 'Pretendard';
         let currentTextColor = '#ffffff';
         
-        // 브라우저 이미지 캐시 우회를 위해 타임스탬프 파라미터 적용
         const timestamp = new Date().getTime();
         const bgImgPath = `bg-school2.png?v=${timestamp}`;
 
@@ -629,7 +630,6 @@
             }, 1000);
         });
 
-        /* 캡처 합성 함수 */
         function captureFrame() {
             const canvas = document.getElementById('render-canvas');
             const ctx = canvas.getContext('2d');
@@ -639,7 +639,6 @@
             canvas.width = width;
             canvas.height = height;
 
-            // 1. 단색/그라데이션 기본 바탕색 그리기
             if (activeThemeClass === 'theme-color-1') {
                 ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, height);
             } else if (activeThemeClass === 'theme-color-2') {
@@ -654,16 +653,14 @@
                 ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, width, height);
             }
 
-            // 2. 배경 이미지 오버레이 (선부고 테마 시)
             if (activeThemeClass === 'theme-school') {
                 ctx.drawImage(bgCustomImg, 0, 0, width, height);
             }
 
-            // 3. 비디오 캡처 화면 상단에 그리기
             const videos = document.querySelectorAll('.webcam-stream');
             const padding = 25;
-            const topMargin = 90;
-            const bottomMargin = 110;
+            const topMargin = 85;
+            const bottomMargin = 130; /* 캔버스 합성 시 하단 마진 증가 */
             const gridWidth = width - (padding * 2);
             const gridHeight = height - topMargin - bottomMargin;
 
@@ -687,13 +684,11 @@
                 drawVideoToCanvas(ctx, videos[3], padding + w + padding, topMargin + h + padding, w, h);
             }
 
-            // 4. 우측 상단 문구 오버레이
             ctx.fillStyle = currentTextColor;
             ctx.font = `bold 32px '${currentFont}', sans-serif`;
             ctx.textAlign = 'right';
             ctx.fillText(textHeaderDisplay.innerText, width - 40, 50);
 
-            // 5. 스티커 레이어 그려내기
             const stickers = document.querySelectorAll('.sticker-item');
             const outerRect = frameOuter.getBoundingClientRect();
 
@@ -707,7 +702,6 @@
                 ctx.fillText(s.innerText, rx * width, ry * height);
             });
 
-            // 6. 결과 모달 출력
             const dataUrl = canvas.toDataURL('image/png');
             document.getElementById('final-result-img').src = dataUrl;
 
