@@ -59,7 +59,7 @@
             height: 100%;
         }
 
-        /* 뷰파인더 메인 프레임 (여백 확보로 배경 이미지 짤림 해결) */
+        /* 뷰파인더 메인 프레임 */
         .viewfinder-outer {
             position: relative;
             width: 100%;
@@ -67,25 +67,37 @@
             height: calc(100vh - 120px);
             max-height: 620px;
             background-color: #1a1a1a;
-            background-size: 100% 100%; /* 배경 이미지 비율에 맞게 적용 */
-            background-position: center;
-            background-repeat: no-repeat;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
-            padding: 40px 20px 24px 20px; /* 상단 여백 확충 */
+            padding: 40px 20px 24px 20px;
             transition: all 0.3s ease;
         }
 
+        /* 배경 요소를 사진 레이어 위에 위치시키기 위한 가상 요소 사용 */
+        .viewfinder-outer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 10; /* 카메라 화면(z-index: 1)보다 위에 레이어 배치 */
+        }
+
         /* 배경 테마 CSS 클래스 */
-        .viewfinder-outer.theme-school { background-image: url('bg-school2.png'); }
-        .viewfinder-outer.theme-color-1 { background-image: none; background: #1a1a1a; }
-        .viewfinder-outer.theme-color-2 { background-image: none; background: #ffffff; color: #1a1a1a; }
-        .viewfinder-outer.theme-color-3 { background-image: none; background: #f4ebe1; color: #333333; }
-        .viewfinder-outer.theme-grad-1 { background-image: none; background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
-        .viewfinder-outer.theme-grad-2 { background-image: none; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .viewfinder-outer.theme-school::after { background-image: url('bg-school2.png'); }
+        .viewfinder-outer.theme-color-1 { background: #1a1a1a; }
+        .viewfinder-outer.theme-color-2 { background: #ffffff; color: #1a1a1a; }
+        .viewfinder-outer.theme-color-3 { background: #f4ebe1; color: #333333; }
+        .viewfinder-outer.theme-grad-1 { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
+        .viewfinder-outer.theme-grad-2 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
 
         /* 우측 상단 문구 위치 정리 */
         .frame-header {
@@ -94,19 +106,20 @@
             right: 20px;
             font-size: 1rem;
             font-weight: 700;
-            z-index: 5;
+            z-index: 15; /* 최상단 레이어 */
             white-space: nowrap;
             color: #ffffff;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
+        /* 카메라 화면 레이어 순서를 뒤로 변경 */
         .camera-grid {
             flex: 1;
             display: grid;
             gap: 8px;
             width: 100%;
             position: relative;
-            z-index: 2;
+            z-index: 1; /* z-index를 낮추어 하단 글씨가 사진 위로 올라오게 함 */
             overflow: hidden;
             border-radius: 8px;
             margin-top: 10px;
@@ -141,7 +154,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 10;
+            z-index: 20;
         }
 
         .sticker-item {
@@ -246,7 +259,6 @@
 
         .btn-opt:hover { background-color: #323746; }
         
-        /* 단일 선택 강조 CSS */
         .btn-opt.active {
             background-color: var(--accent-color) !important;
             border-color: var(--accent-color) !important;
@@ -493,7 +505,6 @@
         const inputHeaderText = document.getElementById('input-header-text');
         const countdownEl = document.getElementById('countdown');
 
-        // 웹캠 시작
         async function startCamera() {
             try {
                 videoStream = await navigator.mediaDevices.getUserMedia({
@@ -526,7 +537,6 @@
             }
         }
 
-        // 특정 그룹 내의 선택 버튼 active 전환 전용 함수
         function setActiveButton(groupId, targetBtn) {
             const group = document.getElementById(groupId);
             if (!group) return;
@@ -534,42 +544,36 @@
             if (targetBtn) targetBtn.classList.add('active');
         }
 
-        // 1. 컷수 선택
         function setCutLayout(cutNum, btn) {
             currentCutCount = cutNum;
             setActiveButton('grp-cut', btn);
             renderCutBoxes();
         }
 
-        // 2. 추천 문구 선택
         function selectPresetText(text, btn) {
             inputHeaderText.value = text;
             textHeaderDisplay.innerText = text;
             setActiveButton('grp-preset', btn);
         }
 
-        // 직접 입력시 preset 액티브 해제
         function updateHeaderText() {
             textHeaderDisplay.innerText = inputHeaderText.value;
             const group = document.getElementById('grp-preset');
             group.querySelectorAll('.btn-opt').forEach(btn => btn.classList.remove('active'));
         }
 
-        // 3. 폰트 선택
         function setFont(fontName, btn) {
             currentFont = fontName;
             textHeaderDisplay.style.fontFamily = `'${fontName}', sans-serif`;
             setActiveButton('grp-font', btn);
         }
 
-        // 4. 색상 선택
         function setTextColor(color, btn) {
             currentTextColor = color;
             textHeaderDisplay.style.color = color;
             setActiveButton('grp-color', btn);
         }
 
-        // 5. 배경 테마 선택
         function setTheme(themeClass, btn) {
             frameOuter.classList.remove(activeThemeClass);
             activeThemeClass = themeClass;
@@ -577,7 +581,6 @@
             setActiveButton('grp-theme', btn);
         }
 
-        // 6. 스티커 추가
         function addSticker(emoji) {
             const sticker = document.createElement('div');
             sticker.className = 'sticker-item';
@@ -603,7 +606,6 @@
             stickerLayer.innerHTML = '';
         }
 
-        // 촬영 클릭 이벤트
         document.getElementById('btn-take-photo').addEventListener('click', () => {
             let count = 3;
             countdownEl.style.display = 'block';
@@ -621,7 +623,7 @@
             }, 1000);
         });
 
-        // 캔버스 최종 합성 및 다운로드 생성
+        // 캔버스 합성시: 1) 카메라 영상 먼저 그리기 ➔ 2) 배경 오버레이 이미지 그리기 순서로 합성
         function captureFrame() {
             const canvas = document.getElementById('render-canvas');
             const ctx = canvas.getContext('2d');
@@ -631,28 +633,22 @@
             canvas.width = width;
             canvas.height = height;
 
-            // A. 배경 이미지/색상 복사
-            if (activeThemeClass === 'theme-school' && bgCustomImg.complete) {
-                ctx.drawImage(bgCustomImg, 0, 0, width, height);
-            } else if (activeThemeClass === 'theme-color-1') {
+            // 1. 단색 및 그라데이션 바탕 먼저 적용
+            if (activeThemeClass === 'theme-color-1') {
                 ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, height);
             } else if (activeThemeClass === 'theme-color-2') {
                 ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
             } else if (activeThemeClass === 'theme-color-3') {
                 ctx.fillStyle = '#f4ebe1'; ctx.fillRect(0, 0, width, height);
-            } else {
+            } else if (activeThemeClass.startsWith('theme-grad')) {
                 let grad = ctx.createLinearGradient(0, 0, width, height);
                 grad.addColorStop(0, '#a1c4fd'); grad.addColorStop(1, '#c2e9fb');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
+            } else {
+                ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, height);
             }
 
-            // B. 우측 상단 문구 합성
-            ctx.fillStyle = currentTextColor;
-            ctx.font = `bold 32px '${currentFont}', sans-serif`;
-            ctx.textAlign = 'right';
-            ctx.fillText(textHeaderDisplay.innerText, width - 40, 50);
-
-            // C. 비디오 영상 합성
+            // 2. 비디오 카메라 사진 합성 (배경 오버레이보다 아래로 가게 먼저 그리기)
             const videos = document.querySelectorAll('.webcam-stream');
             const padding = 35;
             const topMargin = 80;
@@ -680,7 +676,18 @@
                 drawVideoToCanvas(ctx, videos[3], padding + w + padding, topMargin + h + padding, w, h);
             }
 
-            // D. 스티커 합성
+            // 3. 사진 위에 배경 디자인 오버레이(하단 글씨 등) 합성
+            if (activeThemeClass === 'theme-school' && bgCustomImg.complete) {
+                ctx.drawImage(bgCustomImg, 0, 0, width, height);
+            }
+
+            // 4. 우측 상단 사용자 지정 문구 합성
+            ctx.fillStyle = currentTextColor;
+            ctx.font = `bold 32px '${currentFont}', sans-serif`;
+            ctx.textAlign = 'right';
+            ctx.fillText(textHeaderDisplay.innerText, width - 40, 50);
+
+            // 5. 스티커 합성
             const stickers = document.querySelectorAll('.sticker-item');
             const outerRect = frameOuter.getBoundingClientRect();
 
@@ -694,7 +701,7 @@
                 ctx.fillText(s.innerText, rx * width, ry * height);
             });
 
-            // E. 모달 미리보기 출력
+            // 6. 결과창 및 QR 노출
             const dataUrl = canvas.toDataURL('image/png');
             document.getElementById('final-result-img').src = dataUrl;
 
