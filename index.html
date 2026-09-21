@@ -6,7 +6,7 @@
     <title>선부포토 - my-photobooth</title>
     <!-- QR 코드 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- 웹 폰트 불러오기 (눈누/구글폰트 무료 폰트) -->
+    <!-- 웹 폰트 불러오기 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Batang:wght@700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <style>
@@ -59,47 +59,45 @@
             height: 100%;
         }
 
-        /* 뷰파인더 메인 프레임 */
+        /* 뷰파인더 메인 프레임 (여백 확보로 배경 이미지 짤림 해결) */
         .viewfinder-outer {
             position: relative;
             width: 100%;
             max-width: 420px;
             height: calc(100vh - 120px);
-            max-height: 600px;
+            max-height: 620px;
             background-color: #1a1a1a;
-            background-size: cover;
+            background-size: 100% 100%; /* 배경 이미지 비율에 맞게 적용 */
             background-position: center;
+            background-repeat: no-repeat;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
-            padding: 24px 16px 20px 16px;
+            padding: 40px 20px 24px 20px; /* 상단 여백 확충 */
             transition: all 0.3s ease;
         }
 
         /* 배경 테마 CSS 클래스 */
         .viewfinder-outer.theme-school { background-image: url('bg-school2.png'); }
-        .viewfinder-outer.theme-color-1 { background: #1a1a1a; }
-        .viewfinder-outer.theme-color-2 { background: #ffffff; color: #1a1a1a; }
-        .viewfinder-outer.theme-color-3 { background: #f4ebe1; color: #333333; }
-        .viewfinder-outer.theme-grad-1 { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
-        .viewfinder-outer.theme-grad-2 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .viewfinder-outer.theme-color-1 { background-image: none; background: #1a1a1a; }
+        .viewfinder-outer.theme-color-2 { background-image: none; background: #ffffff; color: #1a1a1a; }
+        .viewfinder-outer.theme-color-3 { background-image: none; background: #f4ebe1; color: #333333; }
+        .viewfinder-outer.theme-grad-1 { background-image: none; background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
+        .viewfinder-outer.theme-grad-2 { background-image: none; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
 
-        /* 상단 우측 정렬된 커스텀 문구 헤더 */
+        /* 우측 상단 문구 위치 정리 */
         .frame-header {
-            text-align: right;
-            font-size: 1.15rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 1rem;
             font-weight: 700;
-            padding-bottom: 10px;
-            padding-right: 6px;
             z-index: 5;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             color: #ffffff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
-            transition: all 0.2s ease;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         .camera-grid {
@@ -111,6 +109,7 @@
             z-index: 2;
             overflow: hidden;
             border-radius: 8px;
+            margin-top: 10px;
         }
 
         .camera-grid.cut-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
@@ -246,10 +245,12 @@
         }
 
         .btn-opt:hover { background-color: #323746; }
+        
+        /* 단일 선택 강조 CSS */
         .btn-opt.active {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-            color: #fff;
+            background-color: var(--accent-color) !important;
+            border-color: var(--accent-color) !important;
+            color: #ffffff !important;
         }
 
         .color-btn {
@@ -261,7 +262,7 @@
         }
 
         .color-btn:hover { transform: scale(1.05); }
-        .color-btn.active { border-color: #ffffff; }
+        .color-btn.active { border-color: #ffffff !important; transform: scale(1.1); }
 
         .input-text {
             width: 100%;
@@ -370,12 +371,12 @@
             </div>
         </div>
 
-        <!-- 설청 사이드바 -->
+        <!-- 설정 사이드바 -->
         <div class="sidebar-section">
             <div class="sidebar-title">📸 선부포토 설정</div>
 
             <!-- 1. 컷수 선택 -->
-            <div class="control-group">
+            <div class="control-group" id="grp-cut">
                 <div class="control-label">1. 프레임 컷수 선택</div>
                 <div class="grid-4">
                     <button class="btn-opt" onclick="setCutLayout(1, this)">1컷</button>
@@ -385,8 +386,8 @@
                 </div>
             </div>
 
-            <!-- 2. 상단 문구 추천 (10개) 및 직접 입력 -->
-            <div class="control-group">
+            <!-- 2. 상단 문구 선택 및 직접 입력 -->
+            <div class="control-group" id="grp-preset">
                 <div class="control-label">2. 상단 문구 선택 & 직접 입력</div>
                 <div class="grid-2">
                     <button class="btn-opt active" onclick="selectPresetText('오늘의 추억 ✨', this)">오늘의 추억 ✨</button>
@@ -398,13 +399,13 @@
                     <button class="btn-opt" onclick="selectPresetText('기억해 이 순간 📸', this)">기억해 이 순간 📸</button>
                     <button class="btn-opt" onclick="selectPresetText('함께라서 좋아 💛', this)">함께라서 좋아 💛</button>
                     <button class="btn-opt" onclick="selectPresetText('오늘도 화이팅 🔥', this)">오늘도 화이팅 🔥</button>
-                    <button class="btn-opt" onclick="selectPresetText('Best Friends Forever 💖', this)">Best Friends 💖</button>
+                    <button class="btn-opt" onclick="selectPresetText('Best Friends 💖', this)">Best Friends 💖</button>
                 </div>
                 <input type="text" class="input-text" id="input-header-text" value="오늘의 추억 ✨" placeholder="원하는 문구를 직접 입력해보세요" oninput="updateHeaderText()">
             </div>
 
-            <!-- 3. 글씨 폰트(글꼴) 선택 -->
-            <div class="control-group">
+            <!-- 3. 글씨 폰트 선택 -->
+            <div class="control-group" id="grp-font">
                 <div class="control-label">3. 글씨 폰트 선택</div>
                 <div class="grid-4">
                     <button class="btn-opt active" style="font-family: 'Pretendard';" onclick="setFont('Pretendard', this)">기본 고딕</button>
@@ -415,7 +416,7 @@
             </div>
 
             <!-- 4. 글씨 색상 선택 -->
-            <div class="control-group">
+            <div class="control-group" id="grp-color">
                 <div class="control-label">4. 글씨 색상 선택</div>
                 <div class="grid-5">
                     <button class="color-btn active" style="background-color: #ffffff;" onclick="setTextColor('#ffffff', this)"></button>
@@ -427,7 +428,7 @@
             </div>
 
             <!-- 5. 배경 테마 선택 -->
-            <div class="control-group">
+            <div class="control-group" id="grp-theme">
                 <div class="control-label">5. 배경 테마 선택</div>
                 <div class="grid-3">
                     <button class="btn-opt active" onclick="setTheme('theme-school', this)">🏫 선부고</button>
@@ -440,7 +441,7 @@
             </div>
 
             <!-- 6. 스티커 추가 -->
-            <div class="control-group">
+            <div class="control-group" id="grp-sticker">
                 <div class="control-label">6. 스티커 추가</div>
                 <div class="grid-3">
                     <button class="btn-opt" onclick="addSticker('❤️')">❤️ 하트</button>
@@ -464,10 +465,8 @@
                 <img id="final-result-img" alt="최종 사진 미리보기">
             </div>
 
-            <!-- 사진 다운로드 버튼 -->
             <button class="btn-download" onclick="downloadPhoto()">💾 기기에 사진 저장하기</button>
 
-            <!-- QR 코드 -->
             <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 5px;">QR 스캔하여 포토부스 접속하기</p>
             <div class="qr-wrapper" id="qrcode-box"></div>
 
@@ -494,7 +493,7 @@
         const inputHeaderText = document.getElementById('input-header-text');
         const countdownEl = document.getElementById('countdown');
 
-        // 1. 웹캠 연결
+        // 웹캠 시작
         async function startCamera() {
             try {
                 videoStream = await navigator.mediaDevices.getUserMedia({
@@ -507,7 +506,6 @@
             }
         }
 
-        // 2. 비디오 박스 연결
         function renderCutBoxes() {
             cameraGrid.innerHTML = '';
             cameraGrid.className = `camera-grid cut-${currentCutCount}`;
@@ -528,56 +526,66 @@
             }
         }
 
+        // 특정 그룹 내의 선택 버튼 active 전환 전용 함수
+        function setActiveButton(groupId, targetBtn) {
+            const group = document.getElementById(groupId);
+            if (!group) return;
+            group.querySelectorAll('.btn-opt, .color-btn').forEach(btn => btn.classList.remove('active'));
+            if (targetBtn) targetBtn.classList.add('active');
+        }
+
+        // 1. 컷수 선택
         function setCutLayout(cutNum, btn) {
             currentCutCount = cutNum;
-            document.querySelectorAll('.sidebar-section .control-group:nth-child(1) .btn-opt').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
+            setActiveButton('grp-cut', btn);
             renderCutBoxes();
         }
 
-        // 문구 관련 함수
+        // 2. 추천 문구 선택
         function selectPresetText(text, btn) {
             inputHeaderText.value = text;
             textHeaderDisplay.innerText = text;
-            document.querySelectorAll('.sidebar-section .control-group:nth-child(2) .btn-opt').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
+            setActiveButton('grp-preset', btn);
         }
 
+        // 직접 입력시 preset 액티브 해제
         function updateHeaderText() {
             textHeaderDisplay.innerText = inputHeaderText.value;
+            const group = document.getElementById('grp-preset');
+            group.querySelectorAll('.btn-opt').forEach(btn => btn.classList.remove('active'));
         }
 
+        // 3. 폰트 선택
         function setFont(fontName, btn) {
             currentFont = fontName;
             textHeaderDisplay.style.fontFamily = `'${fontName}', sans-serif`;
-            document.querySelectorAll('.sidebar-section .control-group:nth-child(3) .btn-opt').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
+            setActiveButton('grp-font', btn);
         }
 
+        // 4. 색상 선택
         function setTextColor(color, btn) {
             currentTextColor = color;
             textHeaderDisplay.style.color = color;
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
+            setActiveButton('grp-color', btn);
         }
 
+        // 5. 배경 테마 선택
         function setTheme(themeClass, btn) {
             frameOuter.classList.remove(activeThemeClass);
             activeThemeClass = themeClass;
             frameOuter.classList.add(activeThemeClass);
-
-            document.querySelectorAll('.sidebar-section .control-group:nth-child(5) .btn-opt').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
+            setActiveButton('grp-theme', btn);
         }
 
+        // 6. 스티커 추가
         function addSticker(emoji) {
             const sticker = document.createElement('div');
             sticker.className = 'sticker-item';
             sticker.innerText = emoji;
 
             const positions = [
-                { top: '8%', left: '10%' },
-                { top: '8%', left: '50%' },
+                { top: '12%', left: '10%' },
+                { top: '12%', left: '50%' },
                 { top: '92%', left: '12%' },
                 { top: '92%', left: '88%' }
             ];
@@ -595,7 +603,7 @@
             stickerLayer.innerHTML = '';
         }
 
-        // 3. 촬영 진행
+        // 촬영 클릭 이벤트
         document.getElementById('btn-take-photo').addEventListener('click', () => {
             let count = 3;
             countdownEl.style.display = 'block';
@@ -613,7 +621,7 @@
             }, 1000);
         });
 
-        // 4. 합성 및 저장 처리
+        // 캔버스 최종 합성 및 다운로드 생성
         function captureFrame() {
             const canvas = document.getElementById('render-canvas');
             const ctx = canvas.getContext('2d');
@@ -623,7 +631,7 @@
             canvas.width = width;
             canvas.height = height;
 
-            // A. 배경 그리기
+            // A. 배경 이미지/색상 복사
             if (activeThemeClass === 'theme-school' && bgCustomImg.complete) {
                 ctx.drawImage(bgCustomImg, 0, 0, width, height);
             } else if (activeThemeClass === 'theme-color-1') {
@@ -638,17 +646,17 @@
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
             }
 
-            // B. 우측 상단 문구 합성 (폰트 & 색상 적용)
+            // B. 우측 상단 문구 합성
             ctx.fillStyle = currentTextColor;
-            ctx.font = `bold 34px '${currentFont}', sans-serif`;
+            ctx.font = `bold 32px '${currentFont}', sans-serif`;
             ctx.textAlign = 'right';
-            ctx.fillText(textHeaderDisplay.innerText, width - 40, 65);
+            ctx.fillText(textHeaderDisplay.innerText, width - 40, 50);
 
             // C. 비디오 영상 합성
             const videos = document.querySelectorAll('.webcam-stream');
-            const padding = 30;
-            const topMargin = 90;
-            const bottomMargin = 40;
+            const padding = 35;
+            const topMargin = 80;
+            const bottomMargin = 50;
             const gridWidth = width - (padding * 2);
             const gridHeight = height - topMargin - bottomMargin;
 
@@ -686,7 +694,7 @@
                 ctx.fillText(s.innerText, rx * width, ry * height);
             });
 
-            // E. 결과 모달 및 QR 노출
+            // E. 모달 미리보기 출력
             const dataUrl = canvas.toDataURL('image/png');
             document.getElementById('final-result-img').src = dataUrl;
 
