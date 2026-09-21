@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>선부포토 - my-photobooth</title>
-    <!-- QR 코드 생성 라이브러리 -->
+    <!-- QR 코드 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -35,7 +35,6 @@
             overflow-x: hidden;
         }
 
-        /* 전체 반응형 메인 레이아웃 */
         .app-container {
             display: flex;
             width: 100vw;
@@ -46,7 +45,6 @@
             gap: 20px;
         }
 
-        /* 왼쪽: 촬영 스테이지 */
         .stage-section {
             flex: 1;
             display: flex;
@@ -58,7 +56,7 @@
             height: 100%;
         }
 
-        /* 뷰파인더 가두는 프레임 */
+        /* 뷰파인더 메인 프레임 */
         .viewfinder-outer {
             position: relative;
             width: 100%;
@@ -66,6 +64,8 @@
             height: calc(100vh - 120px);
             max-height: 600px;
             background-color: #1a1a1a;
+            background-size: cover;
+            background-position: center;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
@@ -75,30 +75,15 @@
             transition: all 0.3s ease;
         }
 
-        /* 테마 배경 레이아웃 */
+        /* 배경 테마 CSS 클래스 */
+        .viewfinder-outer.theme-school { background-image: url('bg-school2.png'); }
         .viewfinder-outer.theme-color-1 { background: #1a1a1a; }
         .viewfinder-outer.theme-color-2 { background: #ffffff; color: #1a1a1a; }
         .viewfinder-outer.theme-color-3 { background: #f4ebe1; color: #333333; }
         .viewfinder-outer.theme-grad-1 { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
         .viewfinder-outer.theme-grad-2 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
         .viewfinder-outer.theme-grad-3 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .viewfinder-outer.theme-pat-1 {
-            background-color: #ffb6c1;
-            background-image: repeating-linear-gradient(45deg, #111111 25%, transparent 25%, transparent 75%, #111111 75%, #111111), repeating-linear-gradient(45deg, #111111 25%, #ffb6c1 25%, #ffb6c1 75%, #111111 75%, #111111);
-            background-position: 0 0, 20px 20px;
-            background-size: 40px 40px;
-        }
-        .viewfinder-outer.theme-pat-2 {
-            background-color: #fefae0;
-            background-image: radial-gradient(#dda15e 20%, transparent 20%);
-            background-size: 24px 24px;
-        }
-        .viewfinder-outer.theme-pat-3 {
-            background-color: #ffe5ec;
-            background-image: repeating-linear-gradient(-45deg, #ffb3c1, #ffb3c1 10px, #ffe5ec 10px, #ffe5ec 20px);
-        }
 
-        /* 상단 타이틀 */
         .frame-header {
             text-align: center;
             font-size: 1.1rem;
@@ -106,10 +91,9 @@
             padding-bottom: 12px;
             letter-spacing: -0.5px;
             z-index: 5;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* 컷수에 따라 변하는 카메라 그리드 패널 */
         .camera-grid {
             flex: 1;
             display: grid;
@@ -121,7 +105,6 @@
             border-radius: 8px;
         }
 
-        /* 컷수 별 그리드 정의 */
         .camera-grid.cut-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
         .camera-grid.cut-2 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
         .camera-grid.cut-3 { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr 1fr; }
@@ -136,16 +119,14 @@
             border-radius: 6px;
         }
 
-        /* 실제 라이브 비디오 스트림 */
         .webcam-stream {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1); /* 좌우 반전 */
+            transform: scaleX(-1);
             display: block;
         }
 
-        /* 하단 서명 라벨 */
         .frame-footer {
             display: flex;
             justify-content: space-between;
@@ -154,9 +135,9 @@
             font-size: 0.85rem;
             font-weight: 700;
             z-index: 5;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* 스티커 배치 오버레이 레이어 */
         .sticker-layer {
             position: absolute;
             top: 0;
@@ -171,16 +152,9 @@
             position: absolute;
             font-size: 2rem;
             transform: translate(-50%, -50%);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
         }
 
-        @keyframes popIn {
-            0% { transform: translate(-50%, -50%) scale(0); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
-
-        /* 카운트다운 숫자 */
         .countdown-overlay {
             position: absolute;
             top: 50%;
@@ -189,12 +163,11 @@
             font-size: 6rem;
             font-weight: 900;
             color: var(--accent-color);
-            text-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 40px rgba(255,71,87,0.6);
+            text-shadow: 0 0 20px rgba(0,0,0,0.8);
             z-index: 30;
             display: none;
         }
 
-        /* 하단 촬영 버튼 */
         .action-bar {
             margin-top: 16px;
             display: flex;
@@ -218,10 +191,8 @@
         .btn-primary:hover {
             background-color: var(--accent-hover);
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(255, 71, 87, 0.6);
         }
 
-        /* 오른쪽: 사이드바 패널 */
         .sidebar-section {
             width: 360px;
             background-color: var(--panel-bg);
@@ -256,7 +227,6 @@
             color: var(--text-sub);
         }
 
-        /* 버튼 그리드 */
         .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -274,10 +244,7 @@
             text-align: center;
         }
 
-        .btn-opt:hover {
-            background-color: #323746;
-        }
-
+        .btn-opt:hover { background-color: #323746; }
         .btn-opt.active {
             background-color: var(--accent-color);
             border-color: var(--accent-color);
@@ -295,11 +262,6 @@
             outline: none;
         }
 
-        .input-text:focus {
-            border-color: var(--accent-color);
-        }
-
-        /* 모달 팝업 */
         .modal-mask {
             position: fixed;
             top: 0; left: 0;
@@ -316,7 +278,7 @@
         .modal-card {
             background-color: var(--panel-bg);
             border-radius: 24px;
-            padding: 28px;
+            padding: 24px;
             width: 100%;
             max-width: 420px;
             display: flex;
@@ -330,7 +292,7 @@
 
         .qr-wrapper {
             background: #ffffff;
-            padding: 16px;
+            padding: 12px;
             border-radius: 16px;
             display: flex;
             justify-content: center;
@@ -351,65 +313,59 @@
             object-fit: contain;
         }
 
-        /* 모바일 / 태블릿 반응형 레이아웃 */
+        .btn-download {
+            background-color: #2ed573;
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+        }
+
         @media (max-width: 900px) {
             .app-container {
                 flex-direction: column;
                 height: auto;
-                overflow-y: auto;
                 padding: 12px;
             }
-
-            .sidebar-section {
-                width: 100%;
-                max-height: none;
-            }
-
-            .viewfinder-outer {
-                height: 520px;
-                max-height: 70vh;
-            }
+            .sidebar-section { width: 100%; max-height: none; }
+            .viewfinder-outer { height: 520px; max-height: 70vh; }
         }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- 왼쪽: 실시간 라이브 뷰파인더 스테이지 -->
+        <!-- 메인 촬영 뷰파인더 -->
         <div class="stage-section">
-            <div class="viewfinder-outer theme-color-1" id="frame-outer">
-                <!-- 상단 문구 -->
+            <div class="viewfinder-outer theme-school" id="frame-outer">
                 <div class="frame-header" id="text-header-display">오늘의 추억 ✨</div>
 
-                <!-- 컷수 그리드 레이아웃 -->
                 <div class="camera-grid cut-4" id="camera-grid">
-                    <!-- 스크립트로 컷수에 맞춰 동적 생성 -->
+                    <!-- 비디오 박스 동적 추가 -->
                 </div>
 
-                <!-- 하단 라벨 -->
                 <div class="frame-footer">
                     <span>Seonbu</span>
                     <span>선부포토 📸</span>
                 </div>
 
-                <!-- 스티커 오버레이 레이어 -->
                 <div class="sticker-layer" id="sticker-layer"></div>
-
-                <!-- 카운트다운 -->
                 <div class="countdown-overlay" id="countdown">3</div>
             </div>
 
-            <!-- 촬영 버튼 -->
             <div class="action-bar">
                 <button class="btn-primary" id="btn-take-photo">사진 촬영 📸</button>
             </div>
         </div>
 
-        <!-- 오른쪽: 옵션 컨트롤 사이드바 -->
+        <!-- 설청 사이드바 -->
         <div class="sidebar-section">
             <div class="sidebar-title">📸 선부포토 설정</div>
 
-            <!-- 1. 컷수 선택 -->
             <div class="control-group">
                 <div class="control-label">1. 프레임 컷수 선택</div>
                 <div class="grid-4">
@@ -420,25 +376,20 @@
                 </div>
             </div>
 
-            <!-- 2. 배경 테마 선택 -->
             <div class="control-group">
                 <div class="control-label">2. 배경 테마 선택</div>
                 <div class="grid-3">
-                    <button class="btn-opt active" onclick="setTheme('theme-color-1', this)">🖤 블랙</button>
+                    <button class="btn-opt active" onclick="setTheme('theme-school', this)">🏫 선부고</button>
+                    <button class="btn-opt" onclick="setTheme('theme-color-1', this)">🖤 블랙</button>
                     <button class="btn-opt" onclick="setTheme('theme-color-2', this)">🤍 화이트</button>
                     <button class="btn-opt" onclick="setTheme('theme-color-3', this)">🥐 베이지</button>
                     <button class="btn-opt" onclick="setTheme('theme-grad-1', this)">☁️ 파스텔</button>
                     <button class="btn-opt" onclick="setTheme('theme-grad-2', this)">🌸 피치</button>
-                    <button class="btn-opt" onclick="setTheme('theme-grad-3', this)">🔮 보라</button>
-                    <button class="btn-opt" onclick="setTheme('theme-pat-1', this)">🏁 체커</button>
-                    <button class="btn-opt" onclick="setTheme('theme-pat-2', this)">🟡 옐로우닷</button>
-                    <button class="btn-opt" onclick="setTheme('theme-pat-3', this)">💈 캔디</button>
                 </div>
             </div>
 
-            <!-- 3. 스티커 정렬 배치 -->
             <div class="control-group">
-                <div class="control-label">3. 스티커 자동 추가</div>
+                <div class="control-label">3. 스티커 추가</div>
                 <div class="grid-3">
                     <button class="btn-opt" onclick="addSticker('❤️')">❤️ 하트</button>
                     <button class="btn-opt" onclick="addSticker('🎓')">🎓 학사모</button>
@@ -450,7 +401,6 @@
                 <button class="btn-opt" style="margin-top: 4px; color: var(--accent-color);" onclick="clearStickers()">🔄 스티커 초기화</button>
             </div>
 
-            <!-- 4. 상단 문구 수정 -->
             <div class="control-group">
                 <div class="control-label">4. 상단 문구 입력</div>
                 <input type="text" class="input-text" id="input-header-text" value="오늘의 추억 ✨" oninput="updateHeaderText()">
@@ -458,31 +408,35 @@
         </div>
     </div>
 
-    <!-- 결과 안내 및 QR 코드 다운로드 모달 -->
+    <!-- 완성 모달 -->
     <div class="modal-mask" id="result-modal">
         <div class="modal-card">
             <h3>촬영이 완료되었습니다! 🎉</h3>
-            <p style="font-size: 0.85rem; color: var(--text-sub);">스마트폰 카메라로 아래 QR코드를 스캔하시면 사진을 바로 다운로드할 수 있습니다.</p>
             
-            <!-- QR 코드 노출 위치 -->
-            <div class="qr-wrapper" id="qrcode-box"></div>
-
-            <!-- 결과 이미지 미리보기 -->
             <div class="preview-img-box">
                 <img id="final-result-img" alt="최종 사진 미리보기">
             </div>
 
-            <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="closeModal()">다시 찍기 🔄</button>
+            <!-- 사진 바로 다운로드 버튼 -->
+            <button class="btn-download" onclick="downloadPhoto()">💾 기기에 사진 저장하기</button>
+
+            <!-- 페이지 접속 QR 코드 -->
+            <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 5px;">QR 스캔하여 포토부스 접속하기</p>
+            <div class="qr-wrapper" id="qrcode-box"></div>
+
+            <button class="btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="closeModal()">다시 찍기 🔄</button>
         </div>
     </div>
 
-    <!-- 캡처 합성용 비가시 Canvas -->
     <canvas id="render-canvas" style="display:none;"></canvas>
 
     <script>
         let videoStream = null;
         let currentCutCount = 4;
-        let activeThemeClass = 'theme-color-1';
+        let activeThemeClass = 'theme-school';
+        let bgCustomImg = new Image();
+
+        bgCustomImg.src = 'bg-school2.png';
 
         const cameraGrid = document.getElementById('camera-grid');
         const frameOuter = document.getElementById('frame-outer');
@@ -490,7 +444,7 @@
         const textHeaderDisplay = document.getElementById('text-header-display');
         const countdownEl = document.getElementById('countdown');
 
-        // 1. 카메라 시작 및 스트림 연결
+        // 1. 웹캠 연결
         async function startCamera() {
             try {
                 videoStream = await navigator.mediaDevices.getUserMedia({
@@ -499,11 +453,11 @@
                 });
                 renderCutBoxes();
             } catch (err) {
-                alert('카메라 권한을 허용해주세요.');
+                alert('카메라 허용이 필요합니다. 브라우저 설정에서 카메라 권한을 확인해주세요.');
             }
         }
 
-        // 2. 컷수에 맞게 비디오 엘리먼트 생성 및 배치
+        // 2. 비디오 박스 연결
         function renderCutBoxes() {
             cameraGrid.innerHTML = '';
             cameraGrid.className = `camera-grid cut-${currentCutCount}`;
@@ -524,7 +478,6 @@
             }
         }
 
-        // 3. 컷수 변경 클릭
         function setCutLayout(cutNum, btn) {
             currentCutCount = cutNum;
             document.querySelectorAll('.sidebar-section .control-group:nth-child(2) .btn-opt').forEach(b => b.classList.remove('active'));
@@ -532,7 +485,6 @@
             renderCutBoxes();
         }
 
-        // 4. 배경 테마 변경
         function setTheme(themeClass, btn) {
             frameOuter.classList.remove(activeThemeClass);
             activeThemeClass = themeClass;
@@ -542,20 +494,16 @@
             if(btn) btn.classList.add('active');
         }
 
-        // 5. 스티커 자동/스마트 모서리 배치
         function addSticker(emoji) {
             const sticker = document.createElement('div');
             sticker.className = 'sticker-item';
             sticker.innerText = emoji;
 
-            // 얼굴 촬영 영역을 가리지 않도록 프레임의 외각 모서리 위주 배치
             const positions = [
                 { top: '8%', left: '10%' },
                 { top: '8%', left: '90%' },
                 { top: '92%', left: '12%' },
-                { top: '92%', left: '88%' },
-                { top: '50%', left: '6%' },
-                { top: '50%', left: '94%' }
+                { top: '92%', left: '88%' }
             ];
 
             const count = stickerLayer.children.length;
@@ -571,13 +519,11 @@
             stickerLayer.innerHTML = '';
         }
 
-        // 6. 상단 문구 업데이트
         function updateHeaderText() {
-            const txt = document.getElementById('input-header-text').value;
-            textHeaderDisplay.innerText = txt;
+            textHeaderDisplay.innerText = document.getElementById('input-header-text').value;
         }
 
-        // 7. 사진 촬영 및 합성 프로세스
+        // 3. 촬영 진행
         document.getElementById('btn-take-photo').addEventListener('click', () => {
             let count = 3;
             countdownEl.style.display = 'block';
@@ -595,7 +541,7 @@
             }, 1000);
         });
 
-        // 8. 캔버스 프레임 최종 합성 및 다운로드 QR 생성
+        // 4. 합성 및 저장 처리
         function captureFrame() {
             const canvas = document.getElementById('render-canvas');
             const ctx = canvas.getContext('2d');
@@ -605,28 +551,28 @@
             canvas.width = width;
             canvas.height = height;
 
-            // A. 테마 배경 칠하기
-            if (activeThemeClass === 'theme-color-1') ctx.fillStyle = '#1a1a1a';
-            else if (activeThemeClass === 'theme-color-2') ctx.fillStyle = '#ffffff';
-            else if (activeThemeClass === 'theme-color-3') ctx.fillStyle = '#f4ebe1';
-            else if (activeThemeClass.startsWith('theme-grad')) {
-                let grad = ctx.createLinearGradient(0, 0, width, height);
-                if (activeThemeClass === 'theme-grad-1') { grad.addColorStop(0, '#a1c4fd'); grad.addColorStop(1, '#c2e9fb'); }
-                else if (activeThemeClass === 'theme-grad-2') { grad.addColorStop(0, '#ff9a9e'); grad.addColorStop(1, '#fecfef'); }
-                else { grad.addColorStop(0, '#667eea'); grad.addColorStop(1, '#764ba2'); }
-                ctx.fillStyle = grad;
+            // A. 배경 그리기 (bg-school2.png 우선 연동)
+            if (activeThemeClass === 'theme-school' && bgCustomImg.complete) {
+                ctx.drawImage(bgCustomImg, 0, 0, width, height);
+            } else if (activeThemeClass === 'theme-color-1') {
+                ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, height);
+            } else if (activeThemeClass === 'theme-color-2') {
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
+            } else if (activeThemeClass === 'theme-color-3') {
+                ctx.fillStyle = '#f4ebe1'; ctx.fillRect(0, 0, width, height);
             } else {
-                ctx.fillStyle = '#ffe5ec';
+                let grad = ctx.createLinearGradient(0, 0, width, height);
+                grad.addColorStop(0, '#a1c4fd'); grad.addColorStop(1, '#c2e9fb');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
             }
-            ctx.fillRect(0, 0, width, height);
 
-            // B. 상단 문구 draw
+            // B. 상단 문구
             ctx.fillStyle = (activeThemeClass === 'theme-color-2' || activeThemeClass === 'theme-color-3') ? '#1a1a1a' : '#ffffff';
             ctx.font = 'bold 36px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(textHeaderDisplay.innerText, width / 2, 70);
 
-            // C. 컷수별 비디오 캡처 합성
+            // C. 비디오 영상 합성
             const videos = document.querySelectorAll('.webcam-stream');
             const padding = 30;
             const topMargin = 100;
@@ -654,14 +600,14 @@
                 drawVideoToCanvas(ctx, videos[3], padding + w + padding, topMargin + h + padding, w, h);
             }
 
-            // D. 하단 서명 문구
+            // D. 하단 문구
             ctx.font = 'bold 24px sans-serif';
             ctx.textAlign = 'left';
             ctx.fillText('Seonbu', padding, height - 30);
             ctx.textAlign = 'right';
             ctx.fillText('선부포토 📸', width - padding, height - 30);
 
-            // E. 스티커 그려주기
+            // E. 스티커 합성
             const stickers = document.querySelectorAll('.sticker-item');
             const outerRect = frameOuter.getBoundingClientRect();
 
@@ -675,42 +621,47 @@
                 ctx.fillText(s.innerText, rx * width, ry * height);
             });
 
-            // F. 이미지 변환 및 모바일 다이렉트 다운로드 QR 생성
+            // F. 결과 노출 및 QR 생성
             const dataUrl = canvas.toDataURL('image/png');
             document.getElementById('final-result-img').src = dataUrl;
 
-            // 모바일에서 스캔 시 이미지가 바로 열리도록 Data URI 기반 QR코드 생성
+            // 현재 접속 주소 기준 QR코드 생성
             const qrBox = document.getElementById('qrcode-box');
             qrBox.innerHTML = '';
             new QRCode(qrBox, {
-                text: dataUrl,
-                width: 160,
-                height: 160,
-                correctLevel: QRCode.CorrectLevel.L
+                text: window.location.href,
+                width: 140,
+                height: 140
             });
 
             document.getElementById('result-modal').style.display = 'flex';
         }
 
-        // 비디오 프레임 좌우 반전 Crop Draw
         function drawVideoToCanvas(ctx, videoEl, x, y, w, h) {
             ctx.save();
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, 12);
             ctx.clip();
 
-            // 반전 처리
             ctx.translate(x + w, y);
             ctx.scale(-1, 1);
             ctx.drawImage(videoEl, 0, 0, w, h);
             ctx.restore();
         }
 
+        function downloadPhoto() {
+            const canvas = document.getElementById('render-canvas');
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/png');
+            a.download = `선부포토_${Date.now()}.png`;
+            a.click();
+        }
+
         function closeModal() {
             document.getElementById('result-modal').style.display = 'none';
         }
 
-        // 웹캠 시작
+        // 화면 로드 시 실행
         startCamera();
     </script>
 </body>
