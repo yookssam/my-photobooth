@@ -76,7 +76,7 @@
             transition: all 0.3s ease;
         }
 
-        /* 배경 요소를 사진 레이어 위에 위치시키기 위한 가상 요소 사용 */
+        /* 배경 이미지(상/하단 글씨)를 사진 레이어 무조건 '위'에 배치 */
         .viewfinder-outer::after {
             content: '';
             position: absolute;
@@ -88,10 +88,10 @@
             background-position: center;
             background-repeat: no-repeat;
             pointer-events: none;
-            z-index: 10; /* 카메라 화면(z-index: 1)보다 위에 레이어 배치 */
+            z-index: 10; /* 카메라 화면(z-index: 1)보다 더 앞으로 레이어 배치 */
         }
 
-        /* 배경 테마 CSS 클래스 */
+        /* 배경 테마 적용 */
         .viewfinder-outer.theme-school::after { background-image: url('bg-school2.png'); }
         .viewfinder-outer.theme-color-1 { background: #1a1a1a; }
         .viewfinder-outer.theme-color-2 { background: #ffffff; color: #1a1a1a; }
@@ -99,30 +99,31 @@
         .viewfinder-outer.theme-grad-1 { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
         .viewfinder-outer.theme-grad-2 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
 
-        /* 우측 상단 문구 위치 정리 */
+        /* 사용자 입력 우측 상단 문구 위치 */
         .frame-header {
             position: absolute;
-            top: 10px;
+            top: 12px;
             right: 20px;
             font-size: 1rem;
             font-weight: 700;
-            z-index: 15; /* 최상단 레이어 */
+            z-index: 15; /* 가장 최상단 */
             white-space: nowrap;
             color: #ffffff;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
-        /* 카메라 화면 레이어 순서를 뒤로 변경 */
+        /* 카메라 화면 그리드 레이어 (배경보다 아래로 배치) */
         .camera-grid {
             flex: 1;
             display: grid;
             gap: 8px;
             width: 100%;
             position: relative;
-            z-index: 1; /* z-index를 낮추어 하단 글씨가 사진 위로 올라오게 함 */
+            z-index: 1; /* 낮은 z-index로 하단 글씨가 사진을 덮게 함 */
             overflow: hidden;
             border-radius: 8px;
             margin-top: 10px;
+            margin-bottom: 10px;
         }
 
         .camera-grid.cut-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
@@ -371,7 +372,7 @@
                 <div class="frame-header" id="text-header-display">오늘의 추억 ✨</div>
 
                 <div class="camera-grid cut-4" id="camera-grid">
-                    <!-- 비디오 박스 동적 추가 -->
+                    <!-- 비디오 박스 동적 생성 영역 -->
                 </div>
 
                 <div class="sticker-layer" id="sticker-layer"></div>
@@ -468,7 +469,7 @@
         </div>
     </div>
 
-    <!-- 완성 모달 -->
+    <!-- 최종 촬영 결과 모달 -->
     <div class="modal-mask" id="result-modal">
         <div class="modal-card">
             <h3>촬영이 완료되었습니다! 🎉</h3>
@@ -494,8 +495,9 @@
         let activeThemeClass = 'theme-school';
         let currentFont = 'Pretendard';
         let currentTextColor = '#ffffff';
-        let bgCustomImg = new Image();
-
+        
+        // bg-school2.png 파일 로드
+        const bgCustomImg = new Image();
         bgCustomImg.src = 'bg-school2.png';
 
         const cameraGrid = document.getElementById('camera-grid');
@@ -513,7 +515,7 @@
                 });
                 renderCutBoxes();
             } catch (err) {
-                alert('카메라 허용이 필요합니다. 브라우저 설정에서 카메라 권한을 확인해주세요.');
+                alert('카메라 사용 권한이 필요합니다.');
             }
         }
 
@@ -587,10 +589,10 @@
             sticker.innerText = emoji;
 
             const positions = [
-                { top: '12%', left: '10%' },
-                { top: '12%', left: '50%' },
-                { top: '92%', left: '12%' },
-                { top: '92%', left: '88%' }
+                { top: '15%', left: '10%' },
+                { top: '15%', left: '50%' },
+                { top: '88%', left: '15%' },
+                { top: '88%', left: '85%' }
             ];
 
             const count = stickerLayer.children.length;
@@ -623,7 +625,7 @@
             }, 1000);
         });
 
-        // 캔버스 합성시: 1) 카메라 영상 먼저 그리기 ➔ 2) 배경 오버레이 이미지 그리기 순서로 합성
+        /* 캡처 합성 함수: 배경 레이어가 사진 레이어 위로 오도록 전면 수정 */
         function captureFrame() {
             const canvas = document.getElementById('render-canvas');
             const ctx = canvas.getContext('2d');
@@ -633,7 +635,7 @@
             canvas.width = width;
             canvas.height = height;
 
-            // 1. 단색 및 그라데이션 바탕 먼저 적용
+            // 1. 단색/그라데이션 기본 바탕색 그리기
             if (activeThemeClass === 'theme-color-1') {
                 ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, height);
             } else if (activeThemeClass === 'theme-color-2') {
@@ -648,7 +650,7 @@
                 ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, height);
             }
 
-            // 2. 비디오 카메라 사진 합성 (배경 오버레이보다 아래로 가게 먼저 그리기)
+            // 2. 비디오 캡처 화면 먼저 그리기 (배경 오버레이보다 밑 레이어에 도배)
             const videos = document.querySelectorAll('.webcam-stream');
             const padding = 35;
             const topMargin = 80;
@@ -676,18 +678,18 @@
                 drawVideoToCanvas(ctx, videos[3], padding + w + padding, topMargin + h + padding, w, h);
             }
 
-            // 3. 사진 위에 배경 디자인 오버레이(하단 글씨 등) 합성
+            // 3. 사진 레이어 '위'에 bg-school2.png 이미지 오버레이 (하단 글씨 등 잘리지 않게 표출)
             if (activeThemeClass === 'theme-school' && bgCustomImg.complete) {
                 ctx.drawImage(bgCustomImg, 0, 0, width, height);
             }
 
-            // 4. 우측 상단 사용자 지정 문구 합성
+            // 4. 우측 상단 문구 오버레이
             ctx.fillStyle = currentTextColor;
             ctx.font = `bold 32px '${currentFont}', sans-serif`;
             ctx.textAlign = 'right';
             ctx.fillText(textHeaderDisplay.innerText, width - 40, 50);
 
-            // 5. 스티커 합성
+            // 5. 스티커 레이어 그려내기
             const stickers = document.querySelectorAll('.sticker-item');
             const outerRect = frameOuter.getBoundingClientRect();
 
@@ -701,7 +703,7 @@
                 ctx.fillText(s.innerText, rx * width, ry * height);
             });
 
-            // 6. 결과창 및 QR 노출
+            // 6. 저장 및 QR생성 모달 출력
             const dataUrl = canvas.toDataURL('image/png');
             document.getElementById('final-result-img').src = dataUrl;
 
