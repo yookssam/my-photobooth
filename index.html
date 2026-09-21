@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>선부포토 - my-photobooth</title>
-    <!-- QR 코드 라이브러리 -->
+    <!-- QR 코드 라이브러리 및 Tailwind CSS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- 웹 폰트 불러오기 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Batang:wght@700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
@@ -33,19 +34,18 @@
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: hidden;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .app-container {
             display: flex;
             width: 100vw;
-            height: 100vh;
             max-width: 1400px;
             margin: 0 auto;
             padding: 16px;
             gap: 20px;
+            flex: 1;
         }
 
         .stage-section {
@@ -56,7 +56,6 @@
             justify-content: center;
             position: relative;
             width: 100%;
-            height: 100%;
         }
 
         /* 뷰파인더 메인 프레임 */
@@ -64,20 +63,18 @@
             position: relative;
             width: 100%;
             max-width: 420px;
-            height: calc(100vh - 120px);
-            max-height: 640px;
+            height: calc(100vh - 200px);
+            max-height: 620px;
             background-color: #000000;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
-            /* 하단 문구가 안 짤리도록 상/하 패딩 조절 */
-            padding: 45px 16px 75px 16px;
+            padding: 45px 16px 85px 16px;
             transition: all 0.3s ease;
         }
 
-        /* 배경 이미지 오버레이 레이어 */
         .viewfinder-outer::after {
             content: '';
             position: absolute;
@@ -89,7 +86,7 @@
             background-position: center;
             background-repeat: no-repeat;
             pointer-events: none;
-            z-index: 2; /* 카메라 박스 아래 배치 */
+            z-index: 2;
         }
 
         .viewfinder-outer.theme-school::after {
@@ -101,7 +98,6 @@
         .viewfinder-outer.theme-grad-1 { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
         .viewfinder-outer.theme-grad-2 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
 
-        /* 사용자 입력 문구 위치 */
         .frame-header {
             position: absolute;
             top: 12px;
@@ -114,7 +110,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
-        /* 카메라 화면 그리드 레이어 */
         .camera-grid {
             flex: 1;
             display: grid;
@@ -124,7 +119,7 @@
             z-index: 5;
             overflow: hidden;
             border-radius: 8px;
-            margin-bottom: 10px; /* 하단 문구와 카메라 박스 간격 확보 */
+            margin-bottom: 10px;
         }
 
         .camera-grid.cut-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
@@ -139,14 +134,20 @@
             height: 100%;
             overflow: hidden;
             border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .webcam-stream {
+        .webcam-stream, .captured-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1);
             display: block;
+        }
+
+        .webcam-stream {
+            transform: scaleX(-1);
         }
 
         .sticker-layer {
@@ -171,12 +172,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 6rem;
+            font-size: 5rem;
             font-weight: 900;
             color: var(--accent-color);
             text-shadow: 0 0 20px rgba(0,0,0,0.8);
             z-index: 30;
             display: none;
+            text-align: center;
         }
 
         .action-bar {
@@ -213,7 +215,7 @@
             flex-direction: column;
             gap: 18px;
             overflow-y: auto;
-            max-height: 100vh;
+            max-height: calc(100vh - 120px);
         }
 
         .sidebar-title {
@@ -293,13 +295,14 @@
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            background-color: rgba(0, 0, 0, 0.85);
+            background-color: rgba(0, 0, 0, 0.88);
             backdrop-filter: blur(8px);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 100;
             padding: 20px;
+            overflow-y: auto;
         }
 
         .modal-card {
@@ -307,20 +310,22 @@
             border-radius: 24px;
             padding: 24px;
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             text-align: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8);
             border: 1px solid rgba(255,255,255,0.1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .qr-wrapper {
             background: #ffffff;
-            padding: 12px;
-            border-radius: 16px;
+            padding: 8px;
+            border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -328,10 +333,11 @@
 
         .preview-img-box {
             width: 100%;
-            max-height: 220px;
+            max-height: 240px;
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
+            background: #000;
         }
 
         .preview-img-box img {
@@ -343,9 +349,21 @@
         .btn-download {
             background-color: #2ed573;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
-            padding: 12px 24px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-video {
+            background-color: #70a1ff;
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 12px 20px;
             border: none;
             border-radius: 12px;
             cursor: pointer;
@@ -359,7 +377,7 @@
                 padding: 12px;
             }
             .sidebar-section { width: 100%; max-height: none; }
-            .viewfinder-outer { height: 520px; max-height: 70vh; }
+            .viewfinder-outer { height: 500px; }
         }
     </style>
 </head>
@@ -369,13 +387,8 @@
         <!-- 메인 촬영 뷰파인더 -->
         <div class="stage-section">
             <div class="viewfinder-outer theme-school" id="frame-outer">
-                <!-- 우측 상단 문구 -->
-                <div class="frame-header" id="text-header-display">오늘의 추억 ✨</div>
-
-                <div class="camera-grid cut-3" id="camera-grid">
-                    <!-- 비디오 박스 동적 생성 영역 -->
-                </div>
-
+                <div class="frame-header" id="text-header-display">선부고 최고 ✨</div>
+                <div class="camera-grid cut-3" id="camera-grid"></div>
                 <div class="sticker-layer" id="sticker-layer"></div>
                 <div class="countdown-overlay" id="countdown">3</div>
             </div>
@@ -389,7 +402,6 @@
         <div class="sidebar-section">
             <div class="sidebar-title">📸 선부포토 설정</div>
 
-            <!-- 1. 컷수 선택 -->
             <div class="control-group" id="grp-cut">
                 <div class="control-label">1. 프레임 컷수 선택</div>
                 <div class="grid-4">
@@ -400,7 +412,6 @@
                 </div>
             </div>
 
-            <!-- 2. 상단 문구 선택 및 직접 입력 -->
             <div class="control-group" id="grp-preset">
                 <div class="control-label">2. 상단 문구 선택 & 직접 입력</div>
                 <div class="grid-2">
@@ -418,7 +429,6 @@
                 <input type="text" class="input-text" id="input-header-text" value="선부고 최고 ✨" placeholder="원하는 문구를 직접 입력해보세요" oninput="updateHeaderText()">
             </div>
 
-            <!-- 3. 글씨 폰트 선택 -->
             <div class="control-group" id="grp-font">
                 <div class="control-label">3. 글씨 폰트 선택</div>
                 <div class="grid-4">
@@ -429,7 +439,6 @@
                 </div>
             </div>
 
-            <!-- 4. 글씨 색상 선택 -->
             <div class="control-group" id="grp-color">
                 <div class="control-label">4. 글씨 색상 선택</div>
                 <div class="grid-5">
@@ -441,7 +450,6 @@
                 </div>
             </div>
 
-            <!-- 5. 배경 테마 선택 -->
             <div class="control-group" id="grp-theme">
                 <div class="control-label">5. 배경 테마 선택</div>
                 <div class="grid-3">
@@ -454,7 +462,6 @@
                 </div>
             </div>
 
-            <!-- 6. 스티커 추가 -->
             <div class="control-group" id="grp-sticker">
                 <div class="control-label">6. 스티커 추가</div>
                 <div class="grid-3">
@@ -470,21 +477,51 @@
         </div>
     </div>
 
+    <!-- 하단 푸터 패널 -->
+    <footer class="no-print bg-slate-900 text-slate-400 py-4 border-t border-slate-800 text-center text-xs w-full mt-auto">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <div class="bg-slate-800/90 p-3 rounded-lg border border-slate-700/60 max-w-xl mx-auto">
+                <p class="font-bold text-yellow-400 text-sm mb-1">💬 선부고등학교 카카오톡 채널 안내</p>
+                <p class="text-slate-300 text-xs mb-2">학교폭력 신고 및 고민 상담이 필요할 땐 카카오톡 채널을 이용해주세요.</p>
+                <a href="http://pf.kakao.com/_xkxkTKG" target="_blank" class="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 font-bold px-3 py-1.5 rounded-full hover:bg-yellow-300 transition-colors text-xs">
+                    <span>💛 선부고 카카오채널 바로가기</span>
+                </a>
+            </div>
+
+            <div>
+                Developed by <strong class="text-slate-200">천준혁(선부고)</strong> | 
+                <a href="https://instagram.com/yook.ssam" target="_blank" class="hover:underline text-slate-300">
+                    ✨ @yook.ssam
+                </a>
+            </div>
+            <div class="text-[11px] opacity-80">
+                &copy; 2026. All Rights Reserved.
+            </div>
+            <p class="mt-1 text-slate-500 text-[11px]">본 시스템은 선부고등학교 학생 소통 및 포토부스 서비스를 위해 제작되었습니다.</p>
+        </div>
+    </footer>
+
     <!-- 최종 촬영 결과 모달 -->
     <div class="modal-mask" id="result-modal">
         <div class="modal-card">
-            <h3>촬영이 완료되었습니다! 🎉</h3>
+            <h3 style="font-weight: 800; font-size: 1.2rem;">촬영이 완료되었습니다! 🎉</h3>
             
             <div class="preview-img-box">
                 <img id="final-result-img" alt="최종 사진 미리보기">
             </div>
 
-            <button class="btn-download" onclick="downloadPhoto()">💾 기기에 사진 저장하기</button>
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                <button class="btn-download" onclick="downloadPhoto()">💾 기기에 사진 저장하기</button>
+                <button class="btn-video" onclick="downloadVideo()">🎬 모션 영상 저장하기</button>
+            </div>
 
-            <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 5px;">QR 스캔하여 포토부스 접속하기</p>
-            <div class="qr-wrapper" id="qrcode-box"></div>
+            <div style="background: rgba(255,255,255,0.06); padding: 12px; border-radius: 14px; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                <p style="font-size: 0.85rem; color: #fbbf24; font-weight: bold; margin-bottom: 2px;">💬 선부고 카카오톡 채널 (신고/상담)</p>
+                <p style="font-size: 0.72rem; color: #9ca3af; margin-bottom: 8px;">사진 저장 후 QR을 스캔하여 상담 채널로 사진을 전송해보세요!</p>
+                <div class="qr-wrapper" id="qrcode-box" style="margin: 0 auto; width: fit-content;"></div>
+            </div>
 
-            <button class="btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="closeModal()">다시 찍기 🔄</button>
+            <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="closeModal()">다시 찍기 🔄</button>
         </div>
     </div>
 
@@ -497,6 +534,13 @@
         let currentFont = 'Pretendard';
         let currentTextColor = '#ffffff';
         
+        let capturedImages = [];
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordedVideoBlob = null;
+
+        const KAKAO_CHANNEL_URL = "http://pf.kakao.com/_xkxkTKG";
+
         const timestamp = new Date().getTime();
         const bgImgPath = `bg-school2.png?v=${timestamp}`;
 
@@ -511,6 +555,7 @@
         const textHeaderDisplay = document.getElementById('text-header-display');
         const inputHeaderText = document.getElementById('input-header-text');
         const countdownEl = document.getElementById('countdown');
+        const btnTakePhoto = document.getElementById('btn-take-photo');
 
         async function startCamera() {
             try {
@@ -527,19 +572,25 @@
         function renderCutBoxes() {
             cameraGrid.innerHTML = '';
             cameraGrid.className = `camera-grid cut-${currentCutCount}`;
+            capturedImages = [];
 
             for (let i = 0; i < currentCutCount; i++) {
                 const box = document.createElement('div');
                 box.className = 'cut-box';
+                box.id = `cut-box-${i}`;
 
-                const video = document.createElement('video');
-                video.className = 'webcam-stream';
-                video.autoplay = true;
-                video.playsInline = true;
-                video.muted = true;
-                video.srcObject = videoStream;
+                if (i === 0) {
+                    const video = document.createElement('video');
+                    video.className = 'webcam-stream';
+                    video.autoplay = true;
+                    video.playsInline = true;
+                    video.muted = true;
+                    video.srcObject = videoStream;
+                    box.appendChild(video);
+                } else {
+                    box.innerHTML = `<span style="font-size:0.8rem; color:#6b7280;">${i + 1}번째 컷 대기중</span>`;
+                }
 
-                box.appendChild(video);
                 cameraGrid.appendChild(box);
             }
         }
@@ -613,76 +664,173 @@
             stickerLayer.innerHTML = '';
         }
 
-        document.getElementById('btn-take-photo').addEventListener('click', () => {
-            let count = 3;
-            countdownEl.style.display = 'block';
-            countdownEl.innerText = count;
+        btnTakePhoto.addEventListener('click', async () => {
+            btnTakePhoto.disabled = true;
+            btnTakePhoto.style.opacity = '0.5';
+            
+            capturedImages = [];
+            recordedChunks = [];
+            
+            try {
+                mediaRecorder = new MediaRecorder(videoStream, { mimeType: 'video/webm' });
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
+                mediaRecorder.start();
+            } catch (e) {
+                console.log("MediaRecorder 비지원");
+            }
 
-            const timer = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    countdownEl.innerText = count;
-                } else {
-                    clearInterval(timer);
-                    countdownEl.style.display = 'none';
-                    captureFrame();
-                }
-            }, 1000);
+            for (let i = 0; i < currentCutCount; i++) {
+                moveWebcamToBox(i);
+                await startCountdownForCut(i + 1, currentCutCount);
+                captureCurrentCut(i);
+            }
+
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.onstop = () => {
+                    recordedVideoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                };
+            }
+
+            generateFinalFrame();
+
+            btnTakePhoto.disabled = false;
+            btnTakePhoto.style.opacity = '1';
         });
 
-        function captureFrame() {
+        function moveWebcamToBox(index) {
+            for (let i = 0; i < currentCutCount; i++) {
+                const box = document.getElementById(`cut-box-${i}`);
+                if (i === index) {
+                    box.innerHTML = '';
+                    const video = document.createElement('video');
+                    video.className = 'webcam-stream';
+                    video.autoplay = true;
+                    video.playsInline = true;
+                    video.muted = true;
+                    video.srcObject = videoStream;
+                    box.appendChild(video);
+                }
+            }
+        }
+
+        function startCountdownForCut(currentStep, totalSteps) {
+            return new Promise((resolve) => {
+                let count = 3;
+                countdownEl.style.display = 'block';
+                countdownEl.innerHTML = `<span style="font-size:1.8rem; display:block; color:#fff;">${currentStep} / ${totalSteps} 컷</span>${count}`;
+
+                const timer = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        countdownEl.innerHTML = `<span style="font-size:1.8rem; display:block; color:#fff;">${currentStep} / ${totalSteps} 컷</span>${count}`;
+                    } else {
+                        clearInterval(timer);
+                        countdownEl.style.display = 'none';
+                        resolve();
+                    }
+                }, 1000);
+            });
+        }
+
+        function captureCurrentCut(index) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 640;
+            tempCanvas.height = 480;
+            const ctx = tempCanvas.getContext('2d');
+
+            const video = document.querySelector('.webcam-stream');
+            ctx.translate(tempCanvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+            const imgData = tempCanvas.toDataURL('image/png');
+            capturedImages.push(imgData);
+
+            const box = document.getElementById(`cut-box-${index}`);
+            box.innerHTML = `<img src="${imgData}" class="captured-img">`;
+        }
+
+        function generateFinalFrame() {
             const canvas = document.getElementById('render-canvas');
             const ctx = canvas.getContext('2d');
 
             const width = 800;
-            const height = 1100;
+            const photoHeight = 1100;
+            const footerHeight = 100;
+            const totalHeight = photoHeight + footerHeight;
+
             canvas.width = width;
-            canvas.height = height;
+            canvas.height = totalHeight;
 
             if (activeThemeClass === 'theme-color-1') {
-                ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, photoHeight);
             } else if (activeThemeClass === 'theme-color-2') {
-                ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, photoHeight);
             } else if (activeThemeClass === 'theme-color-3') {
-                ctx.fillStyle = '#f4ebe1'; ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#f4ebe1'; ctx.fillRect(0, 0, width, photoHeight);
             } else if (activeThemeClass.startsWith('theme-grad')) {
-                let grad = ctx.createLinearGradient(0, 0, width, height);
+                let grad = ctx.createLinearGradient(0, 0, width, photoHeight);
                 grad.addColorStop(0, '#a1c4fd'); grad.addColorStop(1, '#c2e9fb');
-                ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, width, photoHeight);
             } else {
-                ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, width, photoHeight);
             }
 
             if (activeThemeClass === 'theme-school') {
-                ctx.drawImage(bgCustomImg, 0, 0, width, height);
+                ctx.drawImage(bgCustomImg, 0, 0, width, photoHeight);
             }
 
-            const videos = document.querySelectorAll('.webcam-stream');
             const padding = 25;
             const topMargin = 85;
-            const bottomMargin = 130; /* 캔버스 합성 시 하단 마진 증가 */
+            const bottomMargin = 120;
             const gridWidth = width - (padding * 2);
-            const gridHeight = height - topMargin - bottomMargin;
+            const gridHeight = photoHeight - topMargin - bottomMargin;
 
-            if (currentCutCount === 1) {
-                drawVideoToCanvas(ctx, videos[0], padding, topMargin, gridWidth, gridHeight);
-            } else if (currentCutCount === 2) {
-                const h = (gridHeight - padding) / 2;
-                drawVideoToCanvas(ctx, videos[0], padding, topMargin, gridWidth, h);
-                drawVideoToCanvas(ctx, videos[1], padding, topMargin + h + padding, gridWidth, h);
-            } else if (currentCutCount === 3) {
-                const h = (gridHeight - (padding * 2)) / 3;
-                for (let i = 0; i < 3; i++) {
-                    drawVideoToCanvas(ctx, videos[i], padding, topMargin + (i * (h + padding)), gridWidth, h);
-                }
-            } else if (currentCutCount === 4) {
-                const w = (gridWidth - padding) / 2;
-                const h = (gridHeight - padding) / 2;
-                drawVideoToCanvas(ctx, videos[0], padding, topMargin, w, h);
-                drawVideoToCanvas(ctx, videos[1], padding + w + padding, topMargin, w, h);
-                drawVideoToCanvas(ctx, videos[2], padding, topMargin + h + padding, w, h);
-                drawVideoToCanvas(ctx, videos[3], padding + w + padding, topMargin + h + padding, w, h);
-            }
+            let loadedCount = 0;
+            capturedImages.forEach((imgSrc, idx) => {
+                const img = new Image();
+                img.onload = () => {
+                    if (currentCutCount === 1) {
+                        drawImageToCanvas(ctx, img, padding, topMargin, gridWidth, gridHeight);
+                    } else if (currentCutCount === 2) {
+                        const h = (gridHeight - padding) / 2;
+                        if (idx === 0) drawImageToCanvas(ctx, img, padding, topMargin, gridWidth, h);
+                        if (idx === 1) drawImageToCanvas(ctx, img, padding, topMargin + h + padding, gridWidth, h);
+                    } else if (currentCutCount === 3) {
+                        const h = (gridHeight - (padding * 2)) / 3;
+                        drawImageToCanvas(ctx, img, padding, topMargin + (idx * (h + padding)), gridWidth, h);
+                    } else if (currentCutCount === 4) {
+                        const w = (gridWidth - padding) / 2;
+                        const h = (gridHeight - padding) / 2;
+                        if (idx === 0) drawImageToCanvas(ctx, img, padding, topMargin, w, h);
+                        if (idx === 1) drawImageToCanvas(ctx, img, padding + w + padding, topMargin, w, h);
+                        if (idx === 2) drawImageToCanvas(ctx, img, padding, topMargin + h + padding, w, h);
+                        if (idx === 3) drawImageToCanvas(ctx, img, padding + w + padding, topMargin + h + padding, w, h);
+                    }
+
+                    loadedCount++;
+                    if (loadedCount === capturedImages.length) {
+                        drawOverlaysAndFooter(ctx, width, photoHeight, footerHeight);
+                    }
+                };
+                img.src = imgSrc;
+            });
+        }
+
+        function drawImageToCanvas(ctx, img, x, y, w, h) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, 12);
+            ctx.clip();
+            ctx.drawImage(img, x, y, w, h);
+            ctx.restore();
+        }
+
+        function drawOverlaysAndFooter(ctx, width, photoHeight, footerHeight) {
+            const canvas = document.getElementById('render-canvas');
 
             ctx.fillStyle = currentTextColor;
             ctx.font = `bold 32px '${currentFont}', sans-serif`;
@@ -691,16 +839,26 @@
 
             const stickers = document.querySelectorAll('.sticker-item');
             const outerRect = frameOuter.getBoundingClientRect();
-
             stickers.forEach(s => {
                 const rect = s.getBoundingClientRect();
                 const rx = (rect.left - outerRect.left) / outerRect.width;
                 const ry = (rect.top - outerRect.top) / outerRect.height;
-
                 ctx.font = '48px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(s.innerText, rx * width, ry * height);
+                ctx.fillText(s.innerText, rx * width, ry * photoHeight);
             });
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, photoHeight, width, footerHeight);
+
+            ctx.fillStyle = '#111827';
+            ctx.font = 'bold 20px Pretendard, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('💬 선부고 카카오톡 채널 : 학교폭력 신고 및 고민 상담 가능', width / 2, photoHeight + 42);
+
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '14px Pretendard, sans-serif';
+            ctx.fillText('Developed by 천준혁(선부고) ✨ @yook.ssam | © 2026 All Rights Reserved.', width / 2, photoHeight + 72);
 
             const dataUrl = canvas.toDataURL('image/png');
             document.getElementById('final-result-img').src = dataUrl;
@@ -708,24 +866,12 @@
             const qrBox = document.getElementById('qrcode-box');
             qrBox.innerHTML = '';
             new QRCode(qrBox, {
-                text: window.location.href,
-                width: 130,
-                height: 130
+                text: KAKAO_CHANNEL_URL,
+                width: 90,
+                height: 90
             });
 
             document.getElementById('result-modal').style.display = 'flex';
-        }
-
-        function drawVideoToCanvas(ctx, videoEl, x, y, w, h) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 12);
-            ctx.clip();
-
-            ctx.translate(x + w, y);
-            ctx.scale(-1, 1);
-            ctx.drawImage(videoEl, 0, 0, w, h);
-            ctx.restore();
         }
 
         function downloadPhoto() {
@@ -736,8 +882,20 @@
             a.click();
         }
 
+        function downloadVideo() {
+            if (!recordedVideoBlob) {
+                alert('저장할 모션 영상이 없습니다.');
+                return;
+            }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(recordedVideoBlob);
+            a.download = `선부포토_모션영상_${Date.now()}.webm`;
+            a.click();
+        }
+
         function closeModal() {
             document.getElementById('result-modal').style.display = 'none';
+            renderCutBoxes();
         }
 
         startCamera();
