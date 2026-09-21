@@ -66,17 +66,17 @@
             max-width: 420px;
             height: calc(100vh - 120px);
             max-height: 620px;
-            background-color: #1a1a1a;
+            background-color: #000000;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
-            padding: 40px 20px 24px 20px;
+            padding: 50px 16px 60px 16px; /* 상/하단 배경 장식을 피하기 위한 여백 설정 */
             transition: all 0.3s ease;
         }
 
-        /* 배경 이미지(상/하단 글씨)를 사진 레이어 무조건 '위'에 배치 */
+        /* 배경 이미지(상/하단 프레임 장식) - 카메라 뒤 레이어로 배치 */
         .viewfinder-outer::after {
             content: '';
             position: absolute;
@@ -88,23 +88,24 @@
             background-position: center;
             background-repeat: no-repeat;
             pointer-events: none;
-            z-index: 10; /* 카메라 화면(z-index: 1)보다 더 앞으로 레이어 배치 */
+            z-index: 2; /* 카메라 화면(z-index: 5) 아래로 이동 */
         }
 
-        /* 배경 테마 적용 */
-        .viewfinder-outer.theme-school::after { background-image: url('bg-school2.png'); }
+        .viewfinder-outer.theme-school::after {
+            background-image: var(--bg-img-url, url('bg-school2.png'));
+        }
         .viewfinder-outer.theme-color-1 { background: #1a1a1a; }
         .viewfinder-outer.theme-color-2 { background: #ffffff; color: #1a1a1a; }
         .viewfinder-outer.theme-color-3 { background: #f4ebe1; color: #333333; }
         .viewfinder-outer.theme-grad-1 { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
         .viewfinder-outer.theme-grad-2 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
 
-        /* 사용자 입력 우측 상단 문구 위치 */
+        /* 사용자 입력 문구 위치 */
         .frame-header {
             position: absolute;
-            top: 12px;
+            top: 14px;
             right: 20px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
             z-index: 15; /* 가장 최상단 */
             white-space: nowrap;
@@ -112,18 +113,16 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
-        /* 카메라 화면 그리드 레이어 (배경보다 아래로 배치) */
+        /* 카메라 화면 그리드 레이어 (배경보다 위에 배치) */
         .camera-grid {
             flex: 1;
             display: grid;
             gap: 8px;
             width: 100%;
             position: relative;
-            z-index: 1; /* 낮은 z-index로 하단 글씨가 사진을 덮게 함 */
+            z-index: 5; /* 배경 ::after (z-index: 2)보다 위로 올라오도록 설정 */
             overflow: hidden;
             border-radius: 8px;
-            margin-top: 10px;
-            margin-bottom: 10px;
         }
 
         .camera-grid.cut-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
@@ -133,7 +132,7 @@
 
         .cut-box {
             position: relative;
-            background-color: #000;
+            background-color: #111;
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -342,7 +341,7 @@
         .btn-download {
             background-color: #2ed573;
             color: white;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 700;
             padding: 12px 24px;
             border: none;
@@ -371,7 +370,7 @@
                 <!-- 우측 상단 문구 -->
                 <div class="frame-header" id="text-header-display">오늘의 추억 ✨</div>
 
-                <div class="camera-grid cut-4" id="camera-grid">
+                <div class="camera-grid cut-3" id="camera-grid">
                     <!-- 비디오 박스 동적 생성 영역 -->
                 </div>
 
@@ -394,8 +393,8 @@
                 <div class="grid-4">
                     <button class="btn-opt" onclick="setCutLayout(1, this)">1컷</button>
                     <button class="btn-opt" onclick="setCutLayout(2, this)">2컷</button>
-                    <button class="btn-opt" onclick="setCutLayout(3, this)">3컷</button>
-                    <button class="btn-opt active" onclick="setCutLayout(4, this)">4컷</button>
+                    <button class="btn-opt active" onclick="setCutLayout(3, this)">3컷</button>
+                    <button class="btn-opt" onclick="setCutLayout(4, this)">4컷</button>
                 </div>
             </div>
 
@@ -491,14 +490,19 @@
 
     <script>
         let videoStream = null;
-        let currentCutCount = 4;
+        let currentCutCount = 3;
         let activeThemeClass = 'theme-school';
         let currentFont = 'Pretendard';
         let currentTextColor = '#ffffff';
         
-        // bg-school2.png 파일 로드
+        // 브라우저 이미지 캐시 우회를 위해 타임스탬프 파라미터 적용
+        const timestamp = new Date().getTime();
+        const bgImgPath = `bg-school2.png?v=${timestamp}`;
+
+        document.documentElement.style.setProperty('--bg-img-url', `url('${bgImgPath}')`);
+
         const bgCustomImg = new Image();
-        bgCustomImg.src = 'bg-school2.png';
+        bgCustomImg.src = bgImgPath;
 
         const cameraGrid = document.getElementById('camera-grid');
         const frameOuter = document.getElementById('frame-outer');
@@ -625,7 +629,7 @@
             }, 1000);
         });
 
-        /* 캡처 합성 함수: 배경 레이어가 사진 레이어 위로 오도록 전면 수정 */
+        /* 캡처 합성 함수 */
         function captureFrame() {
             const canvas = document.getElementById('render-canvas');
             const ctx = canvas.getContext('2d');
@@ -647,14 +651,19 @@
                 grad.addColorStop(0, '#a1c4fd'); grad.addColorStop(1, '#c2e9fb');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
             } else {
-                ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, width, height);
             }
 
-            // 2. 비디오 캡처 화면 먼저 그리기 (배경 오버레이보다 밑 레이어에 도배)
+            // 2. 배경 이미지 오버레이 (선부고 테마 시)
+            if (activeThemeClass === 'theme-school') {
+                ctx.drawImage(bgCustomImg, 0, 0, width, height);
+            }
+
+            // 3. 비디오 캡처 화면 상단에 그리기
             const videos = document.querySelectorAll('.webcam-stream');
-            const padding = 35;
-            const topMargin = 80;
-            const bottomMargin = 50;
+            const padding = 25;
+            const topMargin = 90;
+            const bottomMargin = 110;
             const gridWidth = width - (padding * 2);
             const gridHeight = height - topMargin - bottomMargin;
 
@@ -678,11 +687,6 @@
                 drawVideoToCanvas(ctx, videos[3], padding + w + padding, topMargin + h + padding, w, h);
             }
 
-            // 3. 사진 레이어 '위'에 bg-school2.png 이미지 오버레이 (하단 글씨 등 잘리지 않게 표출)
-            if (activeThemeClass === 'theme-school' && bgCustomImg.complete) {
-                ctx.drawImage(bgCustomImg, 0, 0, width, height);
-            }
-
             // 4. 우측 상단 문구 오버레이
             ctx.fillStyle = currentTextColor;
             ctx.font = `bold 32px '${currentFont}', sans-serif`;
@@ -703,7 +707,7 @@
                 ctx.fillText(s.innerText, rx * width, ry * height);
             });
 
-            // 6. 저장 및 QR생성 모달 출력
+            // 6. 결과 모달 출력
             const dataUrl = canvas.toDataURL('image/png');
             document.getElementById('final-result-img').src = dataUrl;
 
