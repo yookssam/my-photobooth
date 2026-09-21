@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>네컷 포토부스</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+    body {
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 500px;
+    }
+    /* 카메라 영역 */
+    .camera-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* 거울 모드 */
+    }
+    .countdown-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 80px;
+      font-weight: bold;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .countdown-overlay.active {
+      opacity: 1;
+    }
+    /* 버튼 */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      background-color: #ff5a5f;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: background 0.2s ease;
+    }
+    .btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background-color: #4A90E2;
+    }
+    /* 결과 영역 */
+    .result-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    canvas {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📸 찰칵 포토부스</h1>
+
+  <div class="container">
+    <!-- 비디오 스트림 영역 -->
+    <div class="camera-box">
+      <video id="video" autoplay playsinline muted></video>
+      <div id="countdown" class="countdown-overlay">3</div>
+    </div>
+
+    <!-- 촬영 컨트롤 버튼 -->
+    <button id="start-btn" class="btn">4컷 촬영 시작하기</button>
+
+    <!-- 촬영 완료 후 결과물 표시 영역 -->
+    <div class="result-section" id="result-section" style="display: none;">
+      <h3>✨ 내 4컷 사진</h3>
+      <canvas id="photo-canvas"></canvas>
+      <button id="download-btn" class="btn btn-secondary">사진 다운로드하기</button>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const startBtn = document.getElementById('start-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const countdownEl = document.getElementById('countdown');
+    const resultSection = document.getElementById('result-section');
+    const canvas = document.getElementById('photo-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const capturedPhotos = [];
+
+    // 1. 카메라 시작
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } },
+          audio: false
+        });
+        video.srcObject = stream;
+      } catch (err) {
+        alert('카메라 접근 권한이 필요합니다. 브라우저 설정에서 카메라 권한을 허용해주세요.');
+        console.error('Camera access error:', err);
+      }
+    }
+
+    // 2. 카운트다운 후 단일 컷 캡처
+    function captureSingleShot() {
+      return new Promise((resolve) => {
+        let count = 3;
+        countdownEl.innerText = count;
+        countdownEl.classList.add('active');
+
+        const timer = setInterval(() => {
+          count--;
+          if (count > 0) {
+            countdownEl.innerText = count;
+          } else {
+            clearInterval(timer);
+            countdownEl.classList.remove('active');
+
+            // 캔버스에 비디오 프레임 그리기 (좌우반전 적용)
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = video.videoWidth || 640;
+            tempCanvas.height = video.videoHeight || 480;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            tempCtx.translate(tempCanvas.width, 0);
+            tempCtx.scale(-1, 1);
+            tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+            capturedPhotos.push(tempCanvas);
+            resolve();
+          }
+        }, 1000);
+      });
+    }
+
+    // 3. 4컷 연사 촬영 진행
+    async function startPhotoBooth() {
+      capturedPhotos.length = 0;
+      startBtn.disabled = true;
+      resultSection.style.display = 'none';
+
+      for (let i = 0; i < 4; i++) {
+        await captureSingleShot();
+        // 컷 사이 0.5초 대기
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      renderFourCutFrame();
+      startBtn.disabled = false;
+      resultSection.style.display = 'flex';
+      resultSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 4. 2x2 네컷 프레임 레어이아웃 생성
+    function renderFourCutFrame() {
+      const photoW = 600;
+      const photoH = 450;
+      const padding = 20;
+      const headerH = 80;
+      const footerH = 60;
+
+      // 최종 이미지 전체 사이즈 계산
+      canvas.width = (photoW * 2) + (padding * 3);
+      canvas.height = headerH + (photoH * 2) + (padding * 3) + footerH;
+
+      // 배경 색상 지정 (원하는 색상으로 변경 가능)
+      ctx.fillStyle = '#1e1e1e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 상단 타이틀 텍스트
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('MY PHOTO BOOTH', canvas.width / 2, 50);
+
+      // 2x2 위치에 사진 배치
+      const positions = [
+        { x: padding, y: headerH + padding },
+        { x: padding * 2 + photoW, y: headerH + padding },
+        { x: padding, y: headerH + padding * 2 + photoH },
+        { x: padding * 2 + photoW, y: headerH + padding * 2 + photoH }
+      ];
+
+      capturedPhotos.forEach((imgCanvas, index) => {
+        const pos = positions[index];
+        ctx.drawImage(imgCanvas, pos.x, pos.y, photoW, photoH);
+      });
+
+      // 하단 날짜 표시
+      const today = new Date().toISOString().split('T')[0];
+      ctx.fillStyle = '#888888';
+      ctx.font = '20px sans-serif';
+      ctx.fillText(today, canvas.width / 2, canvas.height - 20);
+    }
+
+    // 5. 이미지 파일 다운로드
+    function downloadImage() {
+      const link = document.createElement('a');
+      link.download = `photobooth-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    startBtn.addEventListener('click', startPhotoBooth);
+    downloadBtn.addEventListener('click', downloadImage);
+
+    // 실행 시 카메라 초기화
+    initCamera();
+  </script>
+</body>
+</html>
