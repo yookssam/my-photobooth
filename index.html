@@ -68,7 +68,7 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
-            padding: 45px 16px 85px 16px;
+            padding: 45px 16px 45px 16px;
             transition: all 0.3s ease;
         }
 
@@ -99,13 +99,13 @@
             position: absolute;
             top: 12px;
             right: 20px;
-            font-size: 0.95rem;
+            font-size: 1.3rem;
             font-weight: 700;
             z-index: 15;
             white-space: nowrap;
             color: #ffffff;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            font-family: 'Pretendard', sans-serif;
+            font-family: 'Nanum Pen Script', cursive;
         }
 
         .camera-grid {
@@ -117,7 +117,6 @@
             z-index: 5;
             overflow: hidden;
             border-radius: 8px;
-            margin-bottom: 10px;
         }
 
         .camera-grid.cut-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
@@ -431,9 +430,9 @@
             <div class="control-group" id="grp-font">
                 <div class="control-label">3. 글씨 폰트 선택</div>
                 <div class="grid-4">
-                    <button class="btn-opt active" style="font-family: 'Pretendard';" onclick="setFont('Pretendard', this)">기본 고딕</button>
+                    <button class="btn-opt" style="font-family: 'Pretendard';" onclick="setFont('Pretendard', this)">기본 고딕</button>
                     <button class="btn-opt" style="font-family: 'Gaegu';" onclick="setFont('Gaegu', this)">둥근 귀여움</button>
-                    <button class="btn-opt" style="font-family: 'Nanum Pen Script';" onclick="setFont('Nanum Pen Script', this)">감성 손글씨</button>
+                    <button class="btn-opt active" style="font-family: 'Nanum Pen Script';" onclick="setFont('Nanum Pen Script', this)">감성 손글씨</button>
                     <button class="btn-opt" style="font-family: 'Gowun Batang';" onclick="setFont('Gowun Batang', this)">클래식 명조</button>
                 </div>
             </div>
@@ -515,13 +514,12 @@
 
             <div style="background: rgba(255,255,255,0.06); padding: 10px; border-radius: 14px; width: 100%; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; gap: 6px;">
                 <p style="font-size: 0.8rem; color: #38bdf8; font-weight: bold;">📱 스마트폰으로 사진 받기</p>
-                <p style="font-size: 0.7rem; color: #9ca3af;" id="qr-status-text">QR코드 생성 중...</p>
+                <p style="font-size: 0.7rem; color: #9ca3af;" id="qr-status-text">구글 드라이브 업로드 중...</p>
                 
                 <div class="qr-wrapper" id="qrcode-box"></div>
 
                 <div style="display: flex; gap: 6px; width: 100%; margin-top: 2px;">
-                    <button class="btn-opt" style="flex: 1; font-size: 0.75rem;" onclick="copyUploadedUrl()">🔗 링크 복사</button>
-                    <button class="btn-opt" style="flex: 1; font-size: 0.75rem; background-color: #fee500; color: #000; font-weight: bold;" onclick="shareToKakao()">💛 카카오톡 공유</button>
+                    <button class="btn-opt" style="width: 100%; font-size: 0.75rem;" onclick="copyUploadedUrl()">🔗 다운로드 링크 복사</button>
                 </div>
             </div>
 
@@ -532,12 +530,13 @@
     <canvas id="render-canvas" style="display:none;"></canvas>
 
     <script>
-        const IMGBB_API_KEY = "e28329b3a0f12c6a0cfaee192b003a89"; 
+        // Google Apps Script 웹 앱 URL 입력 공간
+        const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; 
         
         let videoStream = null;
-        let currentCutCount = 1; // 기본값 1컷으로 설정
+        let currentCutCount = 1;
         let activeThemeClass = 'theme-school';
-        let currentFont = 'Pretendard'; // 기본 폰트 Pretendard
+        let currentFont = 'Nanum Pen Script'; // 기본 폰트 감성손글씨
         let currentTextColor = '#ffffff';
         
         let capturedImages = [];
@@ -677,6 +676,7 @@
             recordedChunks = [];
             
             try {
+                // 모션 영상 녹화 설정
                 mediaRecorder = new MediaRecorder(videoStream, { mimeType: 'video/webm' });
                 mediaRecorder.ondataavailable = (e) => {
                     if (e.data.size > 0) recordedChunks.push(e.data);
@@ -696,6 +696,7 @@
                 mediaRecorder.stop();
                 mediaRecorder.onstop = () => {
                     recordedVideoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                    uploadFileToGoogleDrive(recordedVideoBlob, `선부포토_모션영상_${Date.now()}.webm`, 'video/webm');
                 };
             }
 
@@ -764,11 +765,9 @@
 
             const width = 800;
             const photoHeight = 1100;
-            const footerHeight = 100;
-            const totalHeight = photoHeight + footerHeight;
 
             canvas.width = width;
-            canvas.height = totalHeight;
+            canvas.height = photoHeight;
 
             if (activeThemeClass === 'theme-color-1') {
                 ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, width, photoHeight);
@@ -790,7 +789,7 @@
 
             const padding = 25;
             const topMargin = 85;
-            const bottomMargin = 120;
+            const bottomMargin = 45;
             const gridWidth = width - (padding * 2);
             const gridHeight = photoHeight - topMargin - bottomMargin;
 
@@ -803,7 +802,7 @@
                     } else if (currentCutCount === 2) {
                         const h = (gridHeight - padding) / 2;
                         if (idx === 0) drawImageToCanvas(ctx, img, padding, topMargin, gridWidth, h);
-                        if (idx === 1) drawImageToCanvas(ctx, img, padding + h + padding, gridWidth, h);
+                        if (idx === 1) drawImageToCanvas(ctx, img, padding, topMargin + h + padding, gridWidth, h);
                     } else if (currentCutCount === 3) {
                         const h = (gridHeight - (padding * 2)) / 3;
                         drawImageToCanvas(ctx, img, padding, topMargin + (idx * (h + padding)), gridWidth, h);
@@ -818,7 +817,7 @@
 
                     loadedCount++;
                     if (loadedCount === capturedImages.length) {
-                        drawOverlaysAndFooter(ctx, width, photoHeight, footerHeight);
+                        drawOverlays(ctx, width, photoHeight);
                     }
                 };
                 img.src = imgSrc;
@@ -834,13 +833,11 @@
             ctx.restore();
         }
 
-        function drawOverlaysAndFooter(ctx, width, photoHeight, footerHeight) {
-            const canvas = document.getElementById('render-canvas');
-
+        function drawOverlays(ctx, width, photoHeight) {
             ctx.fillStyle = currentTextColor;
-            ctx.font = `bold 32px '${currentFont}', sans-serif`;
+            ctx.font = `bold 42px '${currentFont}', sans-serif`;
             ctx.textAlign = 'right';
-            ctx.fillText(textHeaderDisplay.innerText, width - 40, 50);
+            ctx.fillText(textHeaderDisplay.innerText, width - 40, 55);
 
             const stickers = document.querySelectorAll('.sticker-item');
             const outerRect = frameOuter.getBoundingClientRect();
@@ -853,98 +850,66 @@
                 ctx.fillText(s.innerText, rx * width, ry * photoHeight);
             });
 
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, photoHeight, width, footerHeight);
-
-            ctx.fillStyle = '#111827';
-            ctx.font = 'bold 20px Pretendard, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('💬 선부고등학교 포토부스 추억 저장', width / 2, photoHeight + 42);
-
-            ctx.fillStyle = '#6b7280';
-            ctx.font = '14px Pretendard, sans-serif';
-            ctx.fillText('Developed by 천준혁(선부고) ✨ @yook.ssam | © 2026 All Rights Reserved.', width / 2, photoHeight + 72);
-
-            const dataUrl = canvas.toDataURL('image/png');
+            const dataUrl = document.getElementById('render-canvas').toDataURL('image/png');
             document.getElementById('final-result-img').src = dataUrl;
-
             document.getElementById('result-modal').style.display = 'flex';
 
-            processUploadAndQR(dataUrl);
+            // 이미지 구글 드라이브 자동 업로드
+            fetch(dataUrl)
+                .then(res => res.blob())
+                .then(blob => uploadFileToGoogleDrive(blob, `선부포토_${Date.now()}.png`, 'image/png'));
         }
 
-        async function processUploadAndQR(fullBase64Image) {
+        async function uploadFileToGoogleDrive(blob, fileName, mimeType) {
             const statusText = document.getElementById('qr-status-text');
             const qrBox = document.getElementById('qrcode-box');
-            
-            statusText.innerText = "스마트폰용 QR코드 생성 중...";
-            qrBox.innerHTML = '';
-            currentUploadedUrl = "";
 
-            const resizedCanvas = document.createElement('canvas');
-            const rCtx = resizedCanvas.getContext('2d');
-            const origCanvas = document.getElementById('render-canvas');
-            
-            resizedCanvas.width = 400;
-            resizedCanvas.height = 600;
-            rCtx.drawImage(origCanvas, 0, 0, 400, 600);
-
-            const base64Data = resizedCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
-
-            try {
-                const formData = new FormData();
-                formData.append("image", base64Data);
-
-                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                    method: "POST",
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success && result.data && result.data.url) {
-                    currentUploadedUrl = result.data.url;
-                    statusText.innerText = "카메라 스캔 후 링크를 클릭해 저장하세요!";
-                    
-                    qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUploadedUrl)}" alt="QR코드">`;
-                } else {
-                    throw new Error("업로드 실패");
-                }
-            } catch (err) {
-                console.warn("API 업로드 문제, 웹 사이트 주소 QR 생성:", err);
-                currentUploadedUrl = window.location.href;
-                statusText.innerText = "링크 복사 기능을 이용해 보세요!";
-                
-                qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUploadedUrl)}" alt="QR코드">`;
+            if (GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || !GOOGLE_SCRIPT_URL) {
+                statusText.innerText = "구글 스크립트 URL을 설정해 주세요.";
+                return;
             }
+
+            statusText.innerText = "구글 드라이브에 저장 중...";
+
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = async () => {
+                const base64Data = reader.result.split(',')[1];
+                
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            fileData: base64Data,
+                            fileName: fileName,
+                            mimeType: mimeType
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.result === "success") {
+                        currentUploadedUrl = result.url;
+                        statusText.innerText = "스캔 시 자동으로 파일이 다운로드됩니다!";
+                        qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUploadedUrl)}" alt="QR코드">`;
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    statusText.innerText = "업로드 실패 (Google Script 설정을 확인하세요)";
+                }
+            };
         }
 
         function copyUploadedUrl() {
             if (!currentUploadedUrl) {
-                alert("아직 생성된 주소가 없습니다.");
+                alert("아직 다운로드 URL이 생성되지 않았습니다.");
                 return;
             }
             navigator.clipboard.writeText(currentUploadedUrl).then(() => {
-                alert("사진 저장 링크가 복사되었습니다! 카카오톡 대화방에 붙여넣어 공유해 보세요.");
-            }).catch(() => {
-                alert("링크 복사가 완료되었습니다.");
+                alert("구글 드라이브 파일 다운로드 주소가 복사되었습니다.");
             });
-        }
-
-        function shareToKakao() {
-            if (!currentUploadedUrl) {
-                alert("아직 공유할 이미지 링크가 준비되지 않았습니다.");
-                return;
-            }
-            if (navigator.share) {
-                navigator.share({
-                    title: '선부포토 사진',
-                    text: '선부포토에서 찍은 사진입니다!',
-                    url: currentUploadedUrl,
-                }).catch(() => {});
-            } else {
-                copyUploadedUrl();
-            }
         }
 
         function downloadPhoto() {
