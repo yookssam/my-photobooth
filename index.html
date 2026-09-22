@@ -105,6 +105,7 @@
             white-space: nowrap;
             color: #ffffff;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            font-family: 'Pretendard', sans-serif;
         }
 
         .camera-grid {
@@ -385,8 +386,8 @@
         <!-- 메인 촬영 뷰파인더 -->
         <div class="stage-section">
             <div class="viewfinder-outer theme-school" id="frame-outer">
-                <div class="frame-header" id="text-header-display">선부고 최고 ✨</div>
-                <div class="camera-grid cut-3" id="camera-grid"></div>
+                <div class="frame-header" id="text-header-display">오늘도 화이팅 🔥</div>
+                <div class="camera-grid cut-1" id="camera-grid"></div>
                 <div class="sticker-layer" id="sticker-layer"></div>
                 <div class="countdown-overlay" id="countdown">3</div>
             </div>
@@ -403,9 +404,9 @@
             <div class="control-group" id="grp-cut">
                 <div class="control-label">1. 프레임 컷수 선택</div>
                 <div class="grid-4">
-                    <button class="btn-opt" onclick="setCutLayout(1, this)">1컷</button>
+                    <button class="btn-opt active" onclick="setCutLayout(1, this)">1컷</button>
                     <button class="btn-opt" onclick="setCutLayout(2, this)">2컷</button>
-                    <button class="btn-opt active" onclick="setCutLayout(3, this)">3컷</button>
+                    <button class="btn-opt" onclick="setCutLayout(3, this)">3컷</button>
                     <button class="btn-opt" onclick="setCutLayout(4, this)">4컷</button>
                 </div>
             </div>
@@ -413,7 +414,7 @@
             <div class="control-group" id="grp-preset">
                 <div class="control-label">2. 상단 문구 선택 & 직접 입력</div>
                 <div class="grid-2">
-                    <button class="btn-opt active" onclick="selectPresetText('선부고 최고 ✨', this)">선부고 최고 ✨</button>
+                    <button class="btn-opt" onclick="selectPresetText('선부고 최고 ✨', this)">선부고 최고 ✨</button>
                     <button class="btn-opt" onclick="selectPresetText('우리들의 순간 💖', this)">우리들의 순간 💖</button>
                     <button class="btn-opt" onclick="selectPresetText('선부고의 하루 🏫', this)">선부고의 하루 🏫</button>
                     <button class="btn-opt" onclick="selectPresetText('우정 영원히 🍀', this)">우정 영원히 🍀</button>
@@ -421,10 +422,10 @@
                     <button class="btn-opt" onclick="selectPresetText('빛나는 청춘 🌟', this)">빛나는 청춘 🌟</button>
                     <button class="btn-opt" onclick="selectPresetText('기억해 이 순간 📸', this)">기억해 이 순간 📸</button>
                     <button class="btn-opt" onclick="selectPresetText('함께라서 좋아 💛', this)">함께라서 좋아 💛</button>
-                    <button class="btn-opt" onclick="selectPresetText('오늘도 화이팅 🔥', this)">오늘도 화이팅 🔥</button>
+                    <button class="btn-opt active" onclick="selectPresetText('오늘도 화이팅 🔥', this)">오늘도 화이팅 🔥</button>
                     <button class="btn-opt" onclick="selectPresetText('Best Friends 💖', this)">Best Friends 💖</button>
                 </div>
-                <input type="text" class="input-text" id="input-header-text" value="선부고 최고 ✨" placeholder="원하는 문구를 직접 입력해보세요" oninput="updateHeaderText()">
+                <input type="text" class="input-text" id="input-header-text" value="오늘도 화이팅 🔥" placeholder="원하는 문구를 직접 입력해보세요" oninput="updateHeaderText()">
             </div>
 
             <div class="control-group" id="grp-font">
@@ -481,7 +482,7 @@
             <div class="bg-slate-800/90 p-3 rounded-lg border border-slate-700/60 max-w-xl mx-auto">
                 <p class="font-bold text-yellow-400 text-sm mb-1">💬 선부고등학교 카카오톡 안내</p>
                 <p class="text-slate-300 text-xs mb-2">학교폭력 신고 및 고민 상담이 필요할 땐 카카오톡을 이용해주세요.</p>
-                <a href="http://pf.kakao.com/_JxnEqn/chat/" target="_blank" class="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 font-bold px-3 py-1.5 rounded-full hover:bg-yellow-300 transition-colors text-xs">
+                <a href="http://pf.kakao.com/_JxnEqn/chat" target="_blank" class="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 font-bold px-3 py-1.5 rounded-full hover:bg-yellow-300 transition-colors text-xs">
                     <span>💛 선부고 학생인권자치부 채널 링크 이동</span>
                 </a>
             </div>
@@ -534,9 +535,9 @@
         const IMGBB_API_KEY = "e28329b3a0f12c6a0cfaee192b003a89"; 
         
         let videoStream = null;
-        let currentCutCount = 3;
+        let currentCutCount = 1; // 기본값 1컷으로 설정
         let activeThemeClass = 'theme-school';
-        let currentFont = 'Pretendard';
+        let currentFont = 'Pretendard'; // 기본 폰트 Pretendard
         let currentTextColor = '#ffffff';
         
         let capturedImages = [];
@@ -872,7 +873,6 @@
             processUploadAndQR(dataUrl);
         }
 
-        // 안정적인 이미지 업로드 및 QR 생성
         async function processUploadAndQR(fullBase64Image) {
             const statusText = document.getElementById('qr-status-text');
             const qrBox = document.getElementById('qrcode-box');
@@ -906,14 +906,13 @@
                     currentUploadedUrl = result.data.url;
                     statusText.innerText = "카메라 스캔 후 링크를 클릭해 저장하세요!";
                     
-                    // qrserver API를 이용한 정식 URL QR 생성
                     qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUploadedUrl)}" alt="QR코드">`;
                 } else {
                     throw new Error("업로드 실패");
                 }
             } catch (err) {
                 console.warn("API 업로드 문제, 웹 사이트 주소 QR 생성:", err);
-                currentUploadedUrl = window.location.href; // 실패 시 사이트 URL로 대체
+                currentUploadedUrl = window.location.href;
                 statusText.innerText = "링크 복사 기능을 이용해 보세요!";
                 
                 qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUploadedUrl)}" alt="QR코드">`;
