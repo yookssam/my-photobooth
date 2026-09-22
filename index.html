@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>선부포토 - my-photobooth</title>
-    <!-- QR 코드 라이브러리 및 Tailwind CSS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Tailwind CSS 및 폰트 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 웹 폰트 불러오기 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Batang:wght@700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <style>
@@ -145,16 +143,12 @@
             display: block;
         }
 
-        .webcam-stream {
-            transform: scaleX(-1);
-        }
+        .webcam-stream { transform: scaleX(-1); }
 
         .sticker-layer {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
             z-index: 20;
         }
@@ -168,8 +162,7 @@
 
         .countdown-overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             font-size: 5rem;
             font-weight: 900;
@@ -301,7 +294,6 @@
             align-items: center;
             z-index: 100;
             padding: 12px;
-            overflow-y: auto;
         }
 
         .modal-card {
@@ -321,10 +313,9 @@
             overflow: hidden;
         }
 
-        /* 스크롤바 완전히 제거 및 100% 한눈에 보이도록 레이아웃 수정 */
         .preview-img-box {
             width: 100%;
-            height: 320px;
+            height: 300px;
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
@@ -348,8 +339,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 90px;
-            min-width: 90px;
+            min-height: 100px;
+            min-width: 100px;
+        }
+
+        .qr-wrapper img {
+            width: 90px;
+            height: 90px;
         }
 
         .btn-download {
@@ -377,11 +373,7 @@
         }
 
         @media (max-width: 900px) {
-            .app-container {
-                flex-direction: column;
-                height: auto;
-                padding: 12px;
-            }
+            .app-container { flex-direction: column; height: auto; padding: 12px; }
             .sidebar-section { width: 100%; max-height: none; }
             .viewfinder-outer { height: 500px; }
         }
@@ -487,10 +479,10 @@
     <footer class="no-print bg-slate-900 text-slate-400 py-4 border-t border-slate-800 text-center text-xs w-full mt-auto">
         <div class="max-w-7xl mx-auto px-4 space-y-2">
             <div class="bg-slate-800/90 p-3 rounded-lg border border-slate-700/60 max-w-xl mx-auto">
-                <p class="font-bold text-yellow-400 text-sm mb-1">💬 선부고등학교 카카오톡 채널 안내</p>
-                <p class="text-slate-300 text-xs mb-2">학교폭력 신고 및 고민 상담이 필요할 땐 카카오톡 채널을 이용해주세요.</p>
-                <a href="http://pf.kakao.com/_xkxkTKG" target="_blank" class="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 font-bold px-3 py-1.5 rounded-full hover:bg-yellow-300 transition-colors text-xs">
-                    <span>💛 선부고 카카오채널 바로가기</span>
+                <p class="font-bold text-yellow-400 text-sm mb-1">💬 선부고등학교 카카오톡 안내</p>
+                <p class="text-slate-300 text-xs mb-2">학교폭력 신고 및 고민 상담이 필요할 땐 카카오톡을 이용해주세요.</p>
+                <a href="https://yookssam.github.io/my-photobooth/" target="_blank" class="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 font-bold px-3 py-1.5 rounded-full hover:bg-yellow-300 transition-colors text-xs">
+                    <span>💛 선부고 포토부스 링크 이동</span>
                 </a>
             </div>
 
@@ -503,16 +495,14 @@
             <div class="text-[11px] opacity-80">
                 &copy; 2026. All Rights Reserved.
             </div>
-            <p class="mt-1 text-slate-500 text-[11px]">본 시스템은 선부고등학교 학생 소통 및 포토부스 서비스를 위해 제작되었습니다.</p>
         </div>
     </footer>
 
-    <!-- 최종 촬영 결과 모달 -->
+    <!-- 결과 모달 -->
     <div class="modal-mask" id="result-modal">
         <div class="modal-card">
             <h3 style="font-weight: 800; font-size: 1.1rem;">촬영이 완료되었습니다! 🎉</h3>
             
-            <!-- 한눈에 스크롤 없이 딱 맞춰 보이는 미리보기 박스 -->
             <div class="preview-img-box">
                 <img id="final-result-img" alt="최종 사진 미리보기">
             </div>
@@ -522,7 +512,6 @@
                 <button class="btn-video" onclick="downloadVideo()">🎬 모션 영상</button>
             </div>
 
-            <!-- 스마트폰 QR 및 카카오톡 전송 영역 -->
             <div style="background: rgba(255,255,255,0.06); padding: 10px; border-radius: 14px; width: 100%; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; gap: 6px;">
                 <p style="font-size: 0.8rem; color: #38bdf8; font-weight: bold;">📱 스마트폰으로 사진 받기</p>
                 <p style="font-size: 0.7rem; color: #9ca3af;" id="qr-status-text">QR코드 생성 중...</p>
@@ -531,7 +520,7 @@
 
                 <div style="display: flex; gap: 6px; width: 100%; margin-top: 2px;">
                     <button class="btn-opt" style="flex: 1; font-size: 0.75rem;" onclick="copyUploadedUrl()">🔗 링크 복사</button>
-                    <a href="http://pf.kakao.com/_xkxkTKG" target="_blank" class="btn-opt" style="flex: 1; font-size: 0.75rem; background-color: #fee500; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center; text-decoration: none;">💛 카카오톡 전송</a>
+                    <button class="btn-opt" style="flex: 1; font-size: 0.75rem; background-color: #fee500; color: #000; font-weight: bold;" onclick="shareToKakao()">💛 카카오톡 공유</button>
                 </div>
             </div>
 
@@ -543,9 +532,7 @@
 
     <script>
         const IMGBB_API_KEY = "e28329b3a0f12c6a0cfaee192b003a89"; 
-        const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; 
-        const KAKAO_CHANNEL_URL = "http://pf.kakao.com/_xkxkTKG";
-
+        
         let videoStream = null;
         let currentCutCount = 3;
         let activeThemeClass = 'theme-school';
@@ -815,7 +802,7 @@
                     } else if (currentCutCount === 2) {
                         const h = (gridHeight - padding) / 2;
                         if (idx === 0) drawImageToCanvas(ctx, img, padding, topMargin, gridWidth, h);
-                        if (idx === 1) drawImageToCanvas(ctx, img, padding, topMargin + h + padding, gridWidth, h);
+                        if (idx === 1) drawImageToCanvas(ctx, img, padding + h + padding, gridWidth, h);
                     } else if (currentCutCount === 3) {
                         const h = (gridHeight - (padding * 2)) / 3;
                         drawImageToCanvas(ctx, img, padding, topMargin + (idx * (h + padding)), gridWidth, h);
@@ -871,7 +858,7 @@
             ctx.fillStyle = '#111827';
             ctx.font = 'bold 20px Pretendard, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('💬 선부고 카카오톡 채널 : 학교폭력 신고 및 고민 상담 가능', width / 2, photoHeight + 42);
+            ctx.fillText('💬 선부고등학교 포토부스 추억 저장', width / 2, photoHeight + 42);
 
             ctx.fillStyle = '#6b7280';
             ctx.font = '14px Pretendard, sans-serif';
@@ -882,12 +869,11 @@
 
             document.getElementById('result-modal').style.display = 'flex';
 
-            // 이미지 업로드 프로세스 호출
-            processUploadAndBackup(dataUrl);
+            processUploadAndQR(dataUrl);
         }
 
-        // QR코드 및 이미지 주소 생성을 위한 최적화 함수
-        async function processUploadAndBackup(fullBase64Image) {
+        // 안정적인 이미지 업로드 및 QR 생성
+        async function processUploadAndQR(fullBase64Image) {
             const statusText = document.getElementById('qr-status-text');
             const qrBox = document.getElementById('qrcode-box');
             
@@ -895,7 +881,6 @@
             qrBox.innerHTML = '';
             currentUploadedUrl = "";
 
-            // 업로드를 위해 크기를 축소한 경량 캔버스 생성 (업로드 실패 방지)
             const resizedCanvas = document.createElement('canvas');
             const rCtx = resizedCanvas.getContext('2d');
             const origCanvas = document.getElementById('render-canvas');
@@ -904,7 +889,7 @@
             resizedCanvas.height = 600;
             rCtx.drawImage(origCanvas, 0, 0, 400, 600);
 
-            const base64Data = resizedCanvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            const base64Data = resizedCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
 
             try {
                 const formData = new FormData();
@@ -919,40 +904,48 @@
 
                 if (result.success && result.data && result.data.url) {
                     currentUploadedUrl = result.data.url;
-                    statusText.innerText = "스마트폰 카메라인식 후 바로 저장하세요!";
-
-                    // QR코드 생성
-                    new QRCode(qrBox, {
-                        text: currentUploadedUrl,
-                        width: 85,
-                        height: 85
-                    });
+                    statusText.innerText = "카메라 스캔 후 링크를 클릭해 저장하세요!";
+                    
+                    // qrserver API를 이용한 정식 URL QR 생성
+                    qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUploadedUrl)}" alt="QR코드">`;
                 } else {
-                    throw new Error("ImgBB API 응답 오류");
+                    throw new Error("업로드 실패");
                 }
             } catch (err) {
-                console.warn("API 업로드 실패, 백업 QR을 생성합니다:", err);
-                currentUploadedUrl = fullBase64Image; // 백업으로 dataUrl 사용
-                statusText.innerText = "스마트폰으로 스캔해주세요!";
+                console.warn("API 업로드 문제, 웹 사이트 주소 QR 생성:", err);
+                currentUploadedUrl = window.location.href; // 실패 시 사이트 URL로 대체
+                statusText.innerText = "링크 복사 기능을 이용해 보세요!";
                 
-                new QRCode(qrBox, {
-                    text: currentUploadedUrl.substring(0, 1000), // 백업 QR
-                    width: 85,
-                    height: 85
-                });
+                qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUploadedUrl)}" alt="QR코드">`;
             }
         }
 
         function copyUploadedUrl() {
             if (!currentUploadedUrl) {
-                alert("아직 생성된 이미지 주소가 없습니다.");
+                alert("아직 생성된 주소가 없습니다.");
                 return;
             }
             navigator.clipboard.writeText(currentUploadedUrl).then(() => {
-                alert("사진 저장 링크가 복사되었습니다! 카카오톡 채널이나 메신저에 붙여넣어 전송해보세요.");
+                alert("사진 저장 링크가 복사되었습니다! 카카오톡 대화방에 붙여넣어 공유해 보세요.");
             }).catch(() => {
-                alert("링크 복사 완료!");
+                alert("링크 복사가 완료되었습니다.");
             });
+        }
+
+        function shareToKakao() {
+            if (!currentUploadedUrl) {
+                alert("아직 공유할 이미지 링크가 준비되지 않았습니다.");
+                return;
+            }
+            if (navigator.share) {
+                navigator.share({
+                    title: '선부포토 사진',
+                    text: '선부포토에서 찍은 사진입니다!',
+                    url: currentUploadedUrl,
+                }).catch(() => {});
+            } else {
+                copyUploadedUrl();
+            }
         }
 
         function downloadPhoto() {
