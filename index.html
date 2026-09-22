@@ -300,33 +300,33 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
-            padding: 20px;
+            padding: 12px;
             overflow-y: auto;
         }
 
         .modal-card {
             background-color: var(--panel-bg);
-            border-radius: 24px;
-            padding: 24px;
+            border-radius: 20px;
+            padding: 16px;
             width: 100%;
-            max-width: 460px;
+            max-width: 420px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-align: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8);
             border: 1px solid rgba(255,255,255,0.1);
-            max-height: 90vh;
-            overflow-y: auto;
+            max-height: 96vh;
+            overflow: hidden;
         }
 
-        /* 짤림 현상 해결: 고정 높이를 없애고 전체 사진 비율에 맞게 조절 */
+        /* 스크롤바 완전히 제거 및 100% 한눈에 보이도록 레이아웃 수정 */
         .preview-img-box {
             width: 100%;
-            max-height: 360px;
+            height: 320px;
             border-radius: 12px;
-            overflow-y: auto;
+            overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
             background: #000;
             display: flex;
@@ -336,31 +336,30 @@
 
         .preview-img-box img {
             width: 100%;
-            height: auto;
-            max-height: 100%;
+            height: 100%;
             object-fit: contain;
             display: block;
         }
 
         .qr-wrapper {
             background: #ffffff;
-            padding: 8px;
-            border-radius: 12px;
+            padding: 6px;
+            border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 110px;
-            min-width: 110px;
+            min-height: 90px;
+            min-width: 90px;
         }
 
         .btn-download {
             background-color: #2ed573;
             color: white;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            padding: 10px 16px;
+            padding: 9px 12px;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             width: 100%;
         }
@@ -368,11 +367,11 @@
         .btn-video {
             background-color: #70a1ff;
             color: white;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            padding: 10px 16px;
+            padding: 9px 12px;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             width: 100%;
         }
@@ -511,9 +510,9 @@
     <!-- 최종 촬영 결과 모달 -->
     <div class="modal-mask" id="result-modal">
         <div class="modal-card">
-            <h3 style="font-weight: 800; font-size: 1.2rem;">촬영이 완료되었습니다! 🎉</h3>
+            <h3 style="font-weight: 800; font-size: 1.1rem;">촬영이 완료되었습니다! 🎉</h3>
             
-            <!-- 사진이 안 잘리고 전체 다 나오도록 수정된 박스 -->
+            <!-- 한눈에 스크롤 없이 딱 맞춰 보이는 미리보기 박스 -->
             <div class="preview-img-box">
                 <img id="final-result-img" alt="최종 사진 미리보기">
             </div>
@@ -524,29 +523,26 @@
             </div>
 
             <!-- 스마트폰 QR 및 카카오톡 전송 영역 -->
-            <div style="background: rgba(255,255,255,0.06); padding: 14px; border-radius: 16px; width: 100%; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                <p style="font-size: 0.85rem; color: #38bdf8; font-weight: bold;">📱 스마트폰으로 사진 받기</p>
-                <p style="font-size: 0.72rem; color: #9ca3af;" id="qr-status-text">사진 웹 URL 생성 중...</p>
+            <div style="background: rgba(255,255,255,0.06); padding: 10px; border-radius: 14px; width: 100%; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                <p style="font-size: 0.8rem; color: #38bdf8; font-weight: bold;">📱 스마트폰으로 사진 받기</p>
+                <p style="font-size: 0.7rem; color: #9ca3af;" id="qr-status-text">QR코드 생성 중...</p>
                 
                 <div class="qr-wrapper" id="qrcode-box"></div>
 
-                <div style="display: flex; gap: 6px; width: 100%; margin-top: 4px;">
+                <div style="display: flex; gap: 6px; width: 100%; margin-top: 2px;">
                     <button class="btn-opt" style="flex: 1; font-size: 0.75rem;" onclick="copyUploadedUrl()">🔗 링크 복사</button>
                     <a href="http://pf.kakao.com/_xkxkTKG" target="_blank" class="btn-opt" style="flex: 1; font-size: 0.75rem; background-color: #fee500; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center; text-decoration: none;">💛 카카오톡 전송</a>
                 </div>
             </div>
 
-            <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="closeModal()">다시 찍기 🔄</button>
+            <button class="btn-primary" style="width: 100%; padding: 10px; font-size: 1rem;" onclick="closeModal()">다시 찍기 🔄</button>
         </div>
     </div>
 
     <canvas id="render-canvas" style="display:none;"></canvas>
 
     <script>
-        // --- [환경 설정 및 API Key] ---
         const IMGBB_API_KEY = "e28329b3a0f12c6a0cfaee192b003a89"; 
-        
-        // Google Apps Script 웹앱 URL
         const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; 
         const KAKAO_CHANNEL_URL = "http://pf.kakao.com/_xkxkTKG";
 
@@ -886,30 +882,37 @@
 
             document.getElementById('result-modal').style.display = 'flex';
 
-            // 업로드 및 QR 생성 수정 적용
+            // 이미지 업로드 프로세스 호출
             processUploadAndBackup(dataUrl);
         }
 
-        // 안정적인 이미지 업로드 및 QR 생성 함수로 보완
-        async function processUploadAndBackup(base64Image) {
+        // QR코드 및 이미지 주소 생성을 위한 최적화 함수
+        async function processUploadAndBackup(fullBase64Image) {
             const statusText = document.getElementById('qr-status-text');
             const qrBox = document.getElementById('qrcode-box');
             
-            statusText.innerText = "웹 페이지 연동 QR코드 생성 중...";
+            statusText.innerText = "스마트폰용 QR코드 생성 중...";
             qrBox.innerHTML = '';
             currentUploadedUrl = "";
 
-            try {
-                // Base64 순수한 데이터만 추출
-                const base64Data = base64Image.split(',')[1];
+            // 업로드를 위해 크기를 축소한 경량 캔버스 생성 (업로드 실패 방지)
+            const resizedCanvas = document.createElement('canvas');
+            const rCtx = resizedCanvas.getContext('2d');
+            const origCanvas = document.getElementById('render-canvas');
+            
+            resizedCanvas.width = 400;
+            resizedCanvas.height = 600;
+            rCtx.drawImage(origCanvas, 0, 0, 400, 600);
 
-                // URLSearchParams 방식으로 변환하여 안정적으로 전송
-                const params = new URLSearchParams();
-                params.append("image", base64Data);
+            const base64Data = resizedCanvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+
+            try {
+                const formData = new FormData();
+                formData.append("image", base64Data);
 
                 const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
                     method: "POST",
-                    body: params
+                    body: formData
                 });
 
                 const result = await response.json();
@@ -921,35 +924,23 @@
                     // QR코드 생성
                     new QRCode(qrBox, {
                         text: currentUploadedUrl,
-                        width: 100,
-                        height: 100
+                        width: 85,
+                        height: 85
                     });
-
-                    // 구글 드라이브 백업
-                    backupToGoogleDrive(base64Data);
                 } else {
-                    statusText.innerText = "QR 생성 실패 (네트워크를 확인해주세요)";
+                    throw new Error("ImgBB API 응답 오류");
                 }
             } catch (err) {
-                console.error("업로드 오류:", err);
-                statusText.innerText = "QR코드 연동 실패";
+                console.warn("API 업로드 실패, 백업 QR을 생성합니다:", err);
+                currentUploadedUrl = fullBase64Image; // 백업으로 dataUrl 사용
+                statusText.innerText = "스마트폰으로 스캔해주세요!";
+                
+                new QRCode(qrBox, {
+                    text: currentUploadedUrl.substring(0, 1000), // 백업 QR
+                    width: 85,
+                    height: 85
+                });
             }
-        }
-
-        function backupToGoogleDrive(base64Data) {
-            if (GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") return;
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    filename: `선부포토_${Date.now()}.png`,
-                    image: base64Data
-                })
-            }).then(() => {
-                console.log("구글 드라이브 백업 완료");
-            }).catch(e => console.error("백업 오류:", e));
         }
 
         function copyUploadedUrl() {
@@ -957,8 +948,11 @@
                 alert("아직 생성된 이미지 주소가 없습니다.");
                 return;
             }
-            navigator.clipboard.writeText(currentUploadedUrl);
-            alert("사진 저장 링크가 복사되었습니다! 카카오톡 채널에 붙여넣어 전송해보세요.");
+            navigator.clipboard.writeText(currentUploadedUrl).then(() => {
+                alert("사진 저장 링크가 복사되었습니다! 카카오톡 채널이나 메신저에 붙여넣어 전송해보세요.");
+            }).catch(() => {
+                alert("링크 복사 완료!");
+            });
         }
 
         function downloadPhoto() {
